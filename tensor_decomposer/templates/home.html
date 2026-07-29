@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tensor Decomposer</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'tensor_decomposer/css/home.css' %}">
+</head>
+<body>
+    <main class="page-shell">
+        <section class="hero">
+            <p class="eyebrow">Tensor analysis</p>
+            <h1>Tensor Decomposer</h1>
+            <p class="lede">Provide a tensor as manual input or upload a text file with JSON-like content.</p>
+        </section>
+
+        <section class="panel">
+            <form method="post" enctype="multipart/form-data" class="tensor-form">
+                {% csrf_token %}
+                <label for="tensor_input">Manual tensor input</label>
+                <textarea id="tensor_input" name="tensor_input" rows="6" placeholder="[[1, 2], [3, 4]]"></textarea>
+
+                <label for="tensor_file">Upload tensor file</label>
+                <input id="tensor_file" name="tensor_file" type="file">
+
+                <label for="algorithm">Algorithm</label>
+                <select id="algorithm" name="algorithm">
+                    <option value="svd">SVD</option>
+                    <option value="eigendecomposition">Eigendecomposition</option>
+                    <option value="qr">QR</option>
+                </select>
+
+                <button type="submit">Decompose</button>
+            </form>
+
+            {% if error %}
+                <p class="error">{{ error }}</p>
+            {% endif %}
+
+            {% if result %}
+                <section class="result-block">
+                    <h2>Result</h2>
+                    <pre>{{ result|safe }}</pre>
+                    {% if download_url %}
+                        <p><a href="{% url 'download_result' download_url %}">Download result JSON</a></p>
+                    {% endif %}
+                </section>
+            {% endif %}
+        </section>
+    </main>
+</body>
+</html>

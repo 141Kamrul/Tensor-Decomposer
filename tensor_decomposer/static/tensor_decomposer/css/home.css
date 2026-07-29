@@ -1,0 +1,120 @@
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    line-height: 1.5;
+    color: #172033;
+    background:
+        radial-gradient(circle at top left, rgba(110, 168, 255, 0.18), transparent 30%),
+        radial-gradient(circle at top right, rgba(88, 120, 255, 0.14), transparent 24%),
+        linear-gradient(180deg, #f7f9ff 0%, #eef3ff 100%);
+}
+
+.page-shell {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 3rem 1.25rem 4rem;
+}
+
+.hero {
+    margin-bottom: 1.5rem;
+}
+
+.eyebrow {
+    margin: 0 0 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    font-size: 0.78rem;
+    color: #4b6487;
+}
+
+h1 {
+    margin: 0;
+    font-size: clamp(2.2rem, 4vw, 3.6rem);
+}
+
+.lede {
+    max-width: 60ch;
+    margin: 0.75rem 0 0;
+    color: #4c5970;
+}
+
+.panel {
+    padding: 1.5rem;
+    border: 1px solid rgba(88, 112, 160, 0.16);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 18px 50px rgba(41, 59, 94, 0.12);
+    backdrop-filter: blur(14px);
+}
+
+.tensor-form {
+    display: grid;
+    gap: 1rem;
+}
+
+label {
+    font-weight: 700;
+    color: #24324b;
+}
+
+textarea,
+input,
+select,
+button {
+    font: inherit;
+}
+
+textarea,
+input,
+select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0.8rem 0.9rem;
+    border: 1px solid #c9d5ea;
+    border-radius: 12px;
+    background: #fff;
+}
+
+textarea {
+    min-height: 10rem;
+    resize: vertical;
+}
+
+button {
+    justify-self: start;
+    padding: 0.8rem 1.2rem;
+    border: 0;
+    border-radius: 999px;
+    background: #1d4ed8;
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #1e40af;
+}
+
+.error {
+    margin: 0;
+    color: #b42318;
+    font-weight: 700;
+}
+
+.result-block h2 {
+    margin-top: 0;
+}
+
+pre {
+    margin: 0;
+    padding: 1rem;
+    overflow: auto;
+    border-radius: 14px;
+    background: #f4f7fd;
+    border: 1px solid #d9e2f2;
+}
+
+a {
+    color: #1d4ed8;
+}
