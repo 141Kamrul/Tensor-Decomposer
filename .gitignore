@@ -7,4 +7,3 @@ __pycache__/
 db.sqlite3
 results/decomposition_result.json
 config/__pycache__/
-uv.lock
