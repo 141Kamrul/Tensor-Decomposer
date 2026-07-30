@@ -2,6 +2,8 @@ import numpy as np
 from django.test import SimpleTestCase
 
 from tensor_decomposer.decomposition import parse_tensor_input, run_decomposition
+from tensor_decomposer.services.analysis import analyze_decomposition
+from tensor_decomposer.services.benchmark import benchmark_algorithm
 
 
 class DecompositionTests(SimpleTestCase):
@@ -18,3 +20,23 @@ class DecompositionTests(SimpleTestCase):
         self.assertIn("vh", result)
         self.assertEqual(result["u"].shape, (2, 2))
         self.assertEqual(result["singular_values"].shape, (2,))
+
+    def test_run_cp_decomposition(self):
+        array = np.arange(8, dtype=float).reshape(2, 2, 2)
+        result = run_decomposition(array, "cp")
+        self.assertEqual(result["method"], "cp")
+        self.assertIn("weights", result)
+        self.assertIn("factors", result)
+        self.assertEqual(len(result["factors"]), 3)
+
+    def test_analysis_and_benchmark_services(self):
+        array = np.arange(8, dtype=float).reshape(2, 2, 2)
+        result = run_decomposition(array, "hosvd")
+        analysis = analyze_decomposition(array, "hosvd", result)
+        benchmark = benchmark_algorithm(array, "hosvd", repeats=2)
+
+        self.assertIn("compression_ratio", analysis)
+        self.assertIn("relative_error", analysis)
+        self.assertGreater(analysis["compression_ratio"], 0)
+        self.assertIn("average_ms", benchmark)
+        self.assertEqual(benchmark["repeats"], 2)

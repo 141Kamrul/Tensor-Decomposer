@@ -4,12 +4,40 @@ from typing import Any
 
 import numpy as np
 
-from .eigendecomposition import eigendecomposition
-from .qr import qr
-from .svd import svd
+from .matrix.lu import lu
+from .cp import cp
+from .matrix.eigendecomposition import eigendecomposition
+from .hosvd import hosvd
+from .matrix.qr import qr
+from .tensor_train import tensor_train
+from .tucker import tucker
+from .matrix.svd import svd
+
+SUPPORTED_ALGORITHMS: tuple[str, ...] = (
+    "cp",
+    "tucker",
+    "hosvd",
+    "tensor_train",
+    "svd",
+    "eigendecomposition",
+    "qr",
+    "lu",
+)
 
 
 def run_algorithm(array: np.ndarray, algorithm: str) -> dict[str, Any]:
+    if algorithm == "cp":
+        return cp(array)
+
+    if algorithm == "tucker":
+        return tucker(array)
+
+    if algorithm == "hosvd":
+        return hosvd(array)
+
+    if algorithm == "tensor_train":
+        return tensor_train(array)
+
     if algorithm == "svd":
         return svd(array)
 
@@ -19,4 +47,7 @@ def run_algorithm(array: np.ndarray, algorithm: str) -> dict[str, Any]:
     if algorithm == "qr":
         return qr(array)
 
-    raise ValueError(f"Unsupported algorithm: {algorithm}")
+    if algorithm == "lu":
+        return lu(array)
+
+    raise ValueError(f"Unsupported algorithm while running: {algorithm}")

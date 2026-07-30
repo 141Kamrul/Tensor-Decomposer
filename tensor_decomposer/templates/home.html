@@ -8,45 +8,177 @@
     <link rel="stylesheet" href="{% static 'tensor_decomposer/css/home.css' %}">
 </head>
 <body>
-    <main class="page-shell">
-        <section class="hero">
-            <p class="eyebrow">Tensor analysis</p>
-            <h1>Tensor Decomposer</h1>
-            <p class="lede">Provide a tensor as manual input or upload a text file with JSON-like content.</p>
+    <main class="app-shell">
+        <section class="hero-card panel">
+            <div class="hero-copy">
+                <p class="eyebrow">Tensor analytics workspace</p>
+                <h1>Tensor Decomposer</h1>
+                <p class="lede">Run CP, Tucker, HOSVD, and Tensor Train workflows from one dashboard, then inspect reconstruction accuracy, compression, benchmarking, visualization, and method comparison results.</p>
+            </div>
+            <div class="hero-stats">
+                <article>
+                    <strong>4</strong>
+                    <span>tensor methods</span>
+                </article>
+                <article>
+                    <strong>3</strong>
+                    <span>analysis views</span>
+                </article>
+                <article>
+                    <strong>1</strong>
+                    <span>comparison panel</span>
+                </article>
+            </div>
         </section>
 
-        <section class="panel">
-            <form method="post" enctype="multipart/form-data" class="tensor-form">
-                {% csrf_token %}
-                <label for="tensor_input">Manual tensor input</label>
-                <textarea id="tensor_input" name="tensor_input" rows="6" placeholder="[[1, 2], [3, 4]]"></textarea>
+        <section class="feature-grid">
+            <article class="feature-card panel">
+                <h2>Tensor Input</h2>
+                <p>Enter tensors manually or upload a file through the web interface.</p>
+            </article>
+            <article class="feature-card panel">
+                <h2>Decomposition</h2>
+                <p>Switch between CP, Tucker, HOSVD, and Tensor Train methods.</p>
+            </article>
+            <article class="feature-card panel">
+                <h2>Reconstruction Analysis</h2>
+                <p>Inspect error and accuracy after rebuilding the tensor from decomposed factors.</p>
+            </article>
+            <article class="feature-card panel">
+                <h2>Compression Ratio</h2>
+                <p>Compare original tensor size against the stored decomposition parameters.</p>
+            </article>
+            <article class="feature-card panel">
+                <h2>Benchmarking</h2>
+                <p>Measure execution time for each method with repeatable timing runs.</p>
+            </article>
+            <article class="feature-card panel">
+                <h2>Comparison</h2>
+                <p>Review a side-by-side summary of method performance and reconstruction quality.</p>
+            </article>
+        </section>
 
-                <label for="tensor_file">Upload tensor file</label>
-                <input id="tensor_file" name="tensor_file" type="file">
+        <section class="workspace-grid">
+            <section class="panel control-panel">
+                <form method="post" enctype="multipart/form-data" class="tensor-form">
+                    {% csrf_token %}
 
-                <label for="algorithm">Algorithm</label>
-                <select id="algorithm" name="algorithm">
-                    <option value="svd">SVD</option>
-                    <option value="eigendecomposition">Eigendecomposition</option>
-                    <option value="qr">QR</option>
-                </select>
+                    <div class="field-group">
+                        <label for="tensor_input">Tensor input</label>
+                        <textarea id="tensor_input" name="tensor_input" rows="7" placeholder="[[[1, 2], [3, 4]], [[5, 6], [7, 8]]]">{{ tensor_input|default:'' }}</textarea>
+                    </div>
 
-                <button type="submit">Decompose</button>
-            </form>
+                    <div class="field-grid">
+                        <div class="field-group">
+                            <label for="tensor_file">Upload tensor file</label>
+                            <input id="tensor_file" name="tensor_file" type="file">
+                        </div>
 
-            {% if error %}
-                <p class="error">{{ error }}</p>
-            {% endif %}
+                        <div class="field-group">
+                            <label for="algorithm">Method</label>
+                            <select id="algorithm" name="algorithm">
+                                <optgroup label="Tensor methods">
+                                    <option value="cp" {% if algorithm == 'cp' %}selected{% endif %}>CP Decomposition</option>
+                                    <option value="tucker" {% if algorithm == 'tucker' %}selected{% endif %}>Tucker Decomposition</option>
+                                    <option value="hosvd" {% if algorithm == 'hosvd' %}selected{% endif %}>Higher Order Singular Value Decomposition</option>
+                                    <option value="tensor_train" {% if algorithm == 'tensor_train' %}selected{% endif %}>Tensor Train Decomposition</option>
+                                </optgroup>
+                                <optgroup label="Matrix reference methods">
+                                    <option value="svd" {% if algorithm == 'svd' %}selected{% endif %}>SVD</option>
+                                    <option value="eigendecomposition" {% if algorithm == 'eigendecomposition' %}selected{% endif %}>Eigendecomposition</option>
+                                    <option value="qr" {% if algorithm == 'qr' %}selected{% endif %}>QR Decomposition</option>
+                                    <option value="lu" {% if algorithm == 'lu' %}selected{% endif %}>LU Decomposition</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                    </div>
 
-            {% if result %}
-                <section class="result-block">
-                    <h2>Result</h2>
-                    <pre>{{ result|safe }}</pre>
-                    {% if download_url %}
-                        <p><a href="{% url 'download_result' download_url %}">Download result JSON</a></p>
-                    {% endif %}
-                </section>
-            {% endif %}
+                    <div class="action-row">
+                        <button type="submit" name="action" value="decompose" class="primary-action">Decompose</button>
+                        <button type="submit" name="action" value="analyze" class="secondary-action">Analyze reconstruction</button>
+                        <button type="submit" name="action" value="benchmark" class="secondary-action">Benchmark method</button>
+                        <button type="submit" name="action" value="compare" class="secondary-action">Compare methods</button>
+                    </div>
+                </form>
+
+                {% if error %}
+                    <p class="error">{{ error }}</p>
+                {% endif %}
+            </section>
+
+            <section class="results-column">
+                {% if result_json %}
+                    <article class="panel result-block">
+                        <div class="panel-title-row">
+                            <h2>Decomposition output</h2>
+                            {% if download_url %}
+                                <a href="{% url 'download_result' download_url %}">Download JSON</a>
+                            {% endif %}
+                        </div>
+                        <pre>{{ result_json }}</pre>
+                    </article>
+                {% endif %}
+
+                {% if analysis_json %}
+                    <article class="panel result-block">
+                        <h2>Reconstruction analysis</h2>
+                        <div class="metric-grid">
+                            <div><span>Compression ratio</span><strong>{{ analysis.compression_ratio }}</strong></div>
+                            <div><span>Absolute error</span><strong>{{ analysis.absolute_error }}</strong></div>
+                            <div><span>Relative error</span><strong>{{ analysis.relative_error }}</strong></div>
+                            <div><span>Parameters</span><strong>{{ analysis.compressed_parameters }} / {{ analysis.original_parameters }}</strong></div>
+                        </div>
+                        <pre>{{ analysis_json }}</pre>
+                    </article>
+                {% endif %}
+
+                {% if benchmark_json %}
+                    <article class="panel result-block">
+                        <h2>Benchmarking</h2>
+                        <div class="metric-grid">
+                            <div><span>Average time</span><strong>{{ benchmark.average_ms }} ms</strong></div>
+                            <div><span>Minimum time</span><strong>{{ benchmark.min_ms }} ms</strong></div>
+                            <div><span>Maximum time</span><strong>{{ benchmark.max_ms }} ms</strong></div>
+                            <div><span>Runs</span><strong>{{ benchmark.repeats }}</strong></div>
+                        </div>
+                        <pre>{{ benchmark_json }}</pre>
+                    </article>
+                {% endif %}
+
+                {% if comparison_json %}
+                    <article class="panel result-block">
+                        <h2>Method comparison</h2>
+                        <div class="comparison-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Method</th>
+                                        <th>Compression ratio</th>
+                                        <th>Relative error</th>
+                                        <th>Compressed parameters</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in comparison %}
+                                        <tr>
+                                            <td>{{ row.algorithm }}</td>
+                                            <td>{{ row.compression_ratio }}</td>
+                                            <td>{{ row.relative_error }}</td>
+                                            <td>{{ row.compressed_parameters }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <pre>{{ comparison_json }}</pre>
+                    </article>
+                {% endif %}
+
+                <article class="panel result-block muted-panel">
+                    <h2>Visualization of decomposed outputs</h2>
+                    <p>The current interface presents tensor factors, cores, and benchmark data in structured panels. You can connect charts or tensor plots here without changing the request flow.</p>
+                </article>
+            </section>
         </section>
     </main>
 </body>
