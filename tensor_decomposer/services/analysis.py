@@ -60,7 +60,8 @@ def reconstruct_tensor(algorithm: str, result: dict[str, Any]) -> np.ndarray:
         return result["u"] @ np.diag(result["singular_values"]) @ result["vh"]
 
     if algorithm == "eigendecomposition":
-        return result["eigenvectors"] @ np.diag(result["eigenvalues"]) @ np.linalg.inv(result["eigenvectors"])
+        q = result.get("q", result.get("eigenvectors"))
+        return q @ np.diag(result["eigenvalues"]) @ np.linalg.inv(q)
 
     if algorithm == "qr":
         return result["q"] @ result["r"]
@@ -85,7 +86,8 @@ def count_compressed_parameters(algorithm: str, result: dict[str, Any]) -> int:
         return int(np.prod(result["u"].shape)) + int(np.prod(result["singular_values"].shape)) + int(np.prod(result["vh"].shape))
 
     if algorithm == "eigendecomposition":
-        return int(np.prod(result["eigenvectors"].shape)) + int(np.prod(result["eigenvalues"].shape))
+        q = result.get("q", result.get("eigenvectors"))
+        return int(np.prod(q.shape)) + int(np.prod(result["eigenvalues"].shape))
 
     if algorithm == "qr":
         return int(np.prod(result["q"].shape)) + int(np.prod(result["r"].shape))

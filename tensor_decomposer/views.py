@@ -35,6 +35,15 @@ def _json_default(value: object) -> object:
         return value.tolist()
     if hasattr(value, "item"):
         return value.item()
+    if isinstance(value, complex):
+        r, i = value.real, value.imag
+        if abs(i) < 1e-12:
+            return r
+        sign = "+" if i >= 0 else "-"
+        abs_i = abs(i)
+        if abs(r) < 1e-12:
+            return f"{i:.6f}j".lstrip("+")
+        return f"{r:.6f}{sign}{abs_i:.6f}j"
     raise TypeError(f"Object of type {type(value).__name__} is not JSON serializable")
 
 
@@ -76,6 +85,8 @@ def home(request: HttpRequest) -> HttpResponse:
                         "download_url": export_path.name,
                     }
                 )
+                if request.headers.get("x-requested-with") == "XMLHttpRequest":
+                    return HttpResponse(json.dumps(context, default=_json_default), content_type="application/json")
                 return render(request, "home.html", context)
 
             if action == "compare":
@@ -89,6 +100,8 @@ def home(request: HttpRequest) -> HttpResponse:
                         "download_url": export_path.name,
                     }
                 )
+                if request.headers.get("x-requested-with") == "XMLHttpRequest":
+                    return HttpResponse(json.dumps(context, default=_json_default), content_type="application/json")
                 return render(request, "home.html", context)
 
             result = run_decomposition(tensor, algorithm)
@@ -113,10 +126,14 @@ def home(request: HttpRequest) -> HttpResponse:
                     "download_url": export_path.name,
                 }
             )
+            if request.headers.get("x-requested-with") == "XMLHttpRequest":
+                return HttpResponse(json.dumps(context, default=_json_default), content_type="application/json")
             return render(request, "home.html", context)
         except Exception as exc:  # noqa: BLE001
             context = _build_base_context(None, algorithm, action)
             context["error"] = str(exc)
+            if request.headers.get("x-requested-with") == "XMLHttpRequest":
+                return HttpResponse(json.dumps({"error": str(exc)}, default=_json_default), content_type="application/json", status=400)
             return render(request, "home.html", context, status=400)
 
     return render(request, "home.html", _build_base_context(None, "cp", "decompose"))
