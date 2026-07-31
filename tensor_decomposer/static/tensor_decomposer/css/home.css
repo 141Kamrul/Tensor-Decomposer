@@ -20,6 +20,54 @@
     --shadow-premium: 0 20px 40px -15px rgba(0, 0, 0, 0.6);
     --glow-indigo: 0 0 25px rgba(99, 102, 241, 0.35);
     --glow-cyan: 0 0 25px rgba(6, 182, 212, 0.35);
+
+    /* Adaptable Component Variables */
+    --input-bg: rgba(15, 23, 42, 0.7);
+    --input-border: rgba(255, 255, 255, 0.1);
+    --card-bg: rgba(255, 255, 255, 0.02);
+    --card-border: rgba(255, 255, 255, 0.05);
+    --card-bg-hover: rgba(255, 255, 255, 0.04);
+    --code-bg: rgba(0, 0, 0, 0.35);
+    --code-border: rgba(255, 255, 255, 0.04);
+    --table-bg: rgba(0, 0, 0, 0.15);
+    --table-th-bg: rgba(255, 255, 255, 0.02);
+    --table-border: rgba(255, 255, 255, 0.04);
+    --table-hover-bg: rgba(255, 255, 255, 0.01);
+    --viz-wrapper-bg: rgba(0, 0, 0, 0.2);
+    --viz-wrapper-border: rgba(255, 255, 255, 0.03);
+    --loader-bg: rgba(7, 10, 19, 0.8);
+    --heatmap-zero: rgba(31, 41, 55, 0.4);
+}
+
+[data-theme="light"] {
+    --bg-dark: #f8fafc;
+    --panel-bg: rgba(255, 255, 255, 0.85);
+    --panel-bg-opaque: #ffffff;
+    --panel-border: rgba(15, 23, 42, 0.08);
+    --text-primary: #0f172a;
+    --text-muted: #64748b;
+    
+    /* Shadows & Glows */
+    --shadow-premium: 0 20px 40px -15px rgba(15, 23, 42, 0.06);
+    --glow-indigo: 0 0 25px rgba(99, 102, 241, 0.12);
+    --glow-cyan: 0 0 25px rgba(6, 182, 212, 0.12);
+
+    /* Adaptable Component Variables */
+    --input-bg: rgba(255, 255, 255, 0.8);
+    --input-border: rgba(15, 23, 42, 0.12);
+    --card-bg: rgba(15, 23, 42, 0.02);
+    --card-border: rgba(15, 23, 42, 0.05);
+    --card-bg-hover: rgba(15, 23, 42, 0.04);
+    --code-bg: rgba(15, 23, 42, 0.04);
+    --code-border: rgba(15, 23, 42, 0.06);
+    --table-bg: rgba(15, 23, 42, 0.02);
+    --table-th-bg: rgba(15, 23, 42, 0.04);
+    --table-border: rgba(15, 23, 42, 0.06);
+    --table-hover-bg: rgba(15, 23, 42, 0.01);
+    --viz-wrapper-bg: rgba(15, 23, 42, 0.02);
+    --viz-wrapper-border: rgba(15, 23, 42, 0.04);
+    --loader-bg: rgba(248, 250, 252, 0.8);
+    --heatmap-zero: rgba(226, 232, 240, 0.6);
 }
 
 /* Base Styles */
@@ -149,8 +197,8 @@ body {
 }
 
 .stat-box {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.04);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
     border-radius: 16px;
     padding: 1.25rem;
     text-align: center;
@@ -188,15 +236,15 @@ body {
 }
 
 .feature-card {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
     border-radius: 16px;
     padding: 1.25rem;
     transition: background 0.3s ease, transform 0.3s ease;
 }
 
 .feature-card:hover {
-    background: rgba(255, 255, 255, 0.04);
+    background: var(--card-bg-hover);
     transform: translateY(-2px);
 }
 
@@ -304,8 +352,8 @@ body {
 /* Form Inputs */
 textarea, select, input[type="file"] {
     width: 100%;
-    background-color: rgba(15, 23, 42, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: var(--input-bg);
+    border: 1px solid var(--input-border);
     border-radius: 12px;
     color: var(--text-primary);
     padding: 0.85rem 1rem;
@@ -431,8 +479,8 @@ textarea:focus, select:focus {
 }
 
 .code-container {
-    background: rgba(0, 0, 0, 0.35);
-    border: 1px solid rgba(255, 255, 255, 0.04);
+    background: var(--code-bg);
+    border: 1px solid var(--code-border);
     border-radius: 12px;
     padding: 1.25rem;
     max-height: 25rem;
@@ -442,7 +490,7 @@ textarea:focus, select:focus {
 pre {
     font-family: 'Fira Code', monospace;
     font-size: 0.85rem;
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 /* Metrics Grid */
@@ -453,8 +501,8 @@ pre {
 }
 
 .metric-card {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
     border-radius: 14px;
     padding: 1.25rem;
     display: flex;
@@ -494,7 +542,7 @@ table {
     width: 100%;
     border-collapse: collapse;
     min-width: 500px;
-    background: rgba(0, 0, 0, 0.15);
+    background: var(--table-bg);
 }
 
 th, td {
@@ -504,21 +552,21 @@ th, td {
 }
 
 th {
-    background: rgba(255, 255, 255, 0.02);
+    background: var(--table-th-bg);
     color: var(--text-muted);
     font-weight: 600;
     text-transform: uppercase;
     font-size: 0.75rem;
     letter-spacing: 0.08em;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid var(--table-border);
 }
 
 td {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid var(--table-border);
 }
 
 tr:hover td {
-    background: rgba(255, 255, 255, 0.01);
+    background: var(--table-hover-bg);
 }
 
 /* Badges */
@@ -549,7 +597,7 @@ tr:hover td {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(7, 10, 19, 0.8);
+    background: var(--loader-bg);
     backdrop-filter: blur(8px);
     display: flex;
     justify-content: center;
@@ -570,7 +618,7 @@ tr:hover td {
     flex-direction: column;
     align-items: center;
     gap: 1.5rem;
-    color: white;
+    color: var(--text-primary);
 }
 
 .spinner {
@@ -585,10 +633,10 @@ tr:hover td {
 
 /* Visualization Styles */
 .visualization-wrapper {
-    background: rgba(0, 0, 0, 0.2);
+    background: var(--viz-wrapper-bg);
     border-radius: 14px;
     padding: 1.5rem;
-    border: 1px solid rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--viz-wrapper-border);
 }
 
 .visual-title {
@@ -609,8 +657,8 @@ tr:hover td {
 }
 
 .visual-card {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.04);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
     border-radius: 12px;
     padding: 1.25rem;
 }
@@ -656,7 +704,7 @@ tr:hover td {
 .benchmark-bar-track {
     flex-grow: 1;
     height: 8px;
-    background: rgba(255, 255, 255, 0.05);
+    background: var(--card-border);
     border-radius: 4px;
     overflow: hidden;
 }
@@ -737,4 +785,93 @@ tr:hover td {
     .btn {
         width: 100%;
     }
+}
+
+/* Theme Toggle Button Styles */
+.theme-toggle-btn {
+    position: absolute;
+    top: 2rem;
+    right: 2rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 10;
+}
+
+.theme-toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+.theme-toggle-btn svg {
+    width: 20px;
+    height: 20px;
+    position: absolute;
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+}
+
+/* Light mode button styles override */
+[data-theme="light"] .theme-toggle-btn {
+    background: rgba(0, 0, 0, 0.05);
+    border-color: rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="light"] .theme-toggle-btn:hover {
+    background: rgba(0, 0, 0, 0.08);
+    border-color: rgba(0, 0, 0, 0.15);
+}
+
+/* Sun and Moon switching animation logic */
+.theme-toggle-btn .sun-icon {
+    opacity: 1;
+    transform: rotate(0deg);
+}
+.theme-toggle-btn .moon-icon {
+    opacity: 0;
+    transform: rotate(90deg);
+}
+
+[data-theme="light"] .theme-toggle-btn .sun-icon {
+    opacity: 0;
+    transform: rotate(-90deg);
+}
+[data-theme="light"] .theme-toggle-btn .moon-icon {
+    opacity: 1;
+    transform: rotate(0deg);
+}
+
+/* Light mode overrides for text color gradients and blobs */
+[data-theme="light"] .hero-copy h1 {
+    background: linear-gradient(to right, #0f172a, #2563eb, #4f46e5);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+[data-theme="light"] .ambient-glow {
+    opacity: 0.08;
+}
+
+[data-theme="light"] .glow-1 {
+    background: radial-gradient(circle, var(--accent-indigo) 0%, transparent 80%);
+}
+
+[data-theme="light"] .glow-2 {
+    background: radial-gradient(circle, var(--accent-cyan) 0%, transparent 80%);
+}
+
+/* Utility colors used in templates that weren't defined in CSS */
+.text-cyan-400 {
+    color: var(--accent-cyan);
+}
+.text-gray-300 {
+    color: var(--text-muted);
 }

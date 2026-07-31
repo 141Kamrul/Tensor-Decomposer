@@ -10,7 +10,19 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="{% static 'tensor_decomposer/css/home.css' %}?v=4">
+    <link rel="stylesheet" href="{% static 'tensor_decomposer/css/home.css' %}?v={{ cache_buster }}">
+    <!-- Theme initialization script to prevent FOUC -->
+    <script>
+        (function() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            } else {
+                const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+                document.documentElement.setAttribute('data-theme', prefersLight ? 'light' : 'dark');
+            }
+        })();
+    </script>
 </head>
 <body>
     <!-- Background glows -->
@@ -22,6 +34,15 @@
     <main class="app-shell">
         <!-- Hero card / Header -->
         <section class="hero-card panel">
+            <!-- Theme Toggle Button -->
+            <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme" title="Toggle theme">
+                <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 7a5 5 0 100 10 5 5 0 000-10z" />
+                </svg>
+                <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                </svg>
+            </button>
             <div class="hero-copy">
                 <span class="eyebrow">Advanced Analytics Workspace</span>
                 <h1>Tensor Decomposer</h1>
@@ -258,6 +279,6 @@
     </main>
 
     <!-- Script hooks for AJAX -->
-    <script src="{% static 'tensor_decomposer/js/home.js' %}?v=4" defer></script>
+    <script src="{% static 'tensor_decomposer/js/home.js' %}?v={{ cache_buster }}" defer></script>
 </body>
 </html>

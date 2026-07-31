@@ -2,6 +2,17 @@ document.addEventListener("DOMContentLoaded", () => {
     const form = document.querySelector(".tensor-form");
     const resultsColumn = document.querySelector(".results-column");
     
+    // Theme Toggle Handler
+    const themeToggle = document.getElementById("theme-toggle");
+    if (themeToggle) {
+        themeToggle.addEventListener("click", () => {
+            const currentTheme = document.documentElement.getAttribute("data-theme") || "dark";
+            const newTheme = currentTheme === "light" ? "dark" : "light";
+            document.documentElement.setAttribute("data-theme", newTheme);
+            localStorage.setItem("theme", newTheme);
+        });
+    }
+    
     // Panel elements
     const panelError = document.getElementById("panel-error");
     const panelDecomposition = document.getElementById("panel-decomposition");
@@ -341,7 +352,7 @@ document.addEventListener("DOMContentLoaded", () => {
             line.setAttribute("y1", y);
             line.setAttribute("x2", margin.left + width);
             line.setAttribute("y2", y);
-            line.setAttribute("stroke", "rgba(255, 255, 255, 0.08)");
+            line.setAttribute("stroke", "var(--panel-border)");
             line.setAttribute("stroke-dasharray", "4");
             svg.appendChild(line);
 
@@ -350,7 +361,7 @@ document.addEventListener("DOMContentLoaded", () => {
             text.setAttribute("x", margin.left - 8);
             text.setAttribute("y", y + 4);
             text.setAttribute("text-anchor", "end");
-            text.setAttribute("fill", "#9ca3af");
+            text.setAttribute("fill", "var(--text-muted)");
             text.setAttribute("font-size", "10");
             text.setAttribute("font-family", "monospace");
             text.textContent = ((maxVal * (4 - i)) / 4).toFixed(2);
@@ -426,7 +437,7 @@ document.addEventListener("DOMContentLoaded", () => {
             line.setAttribute("y1", y);
             line.setAttribute("x2", margin.left + width);
             line.setAttribute("y2", y);
-            line.setAttribute("stroke", "rgba(255, 255, 255, 0.08)");
+            line.setAttribute("stroke", "var(--panel-border)");
             line.setAttribute("stroke-dasharray", "4");
             svg.appendChild(line);
 
@@ -435,7 +446,7 @@ document.addEventListener("DOMContentLoaded", () => {
             text.setAttribute("x", margin.left - 8);
             text.setAttribute("y", y + 4);
             text.setAttribute("text-anchor", "end");
-            text.setAttribute("fill", "#9ca3af");
+            text.setAttribute("fill", "var(--text-muted)");
             text.setAttribute("font-size", "10");
             text.setAttribute("font-family", "monospace");
             text.textContent = ((maxVal * (4 - i)) / 4).toFixed(3);
@@ -468,7 +479,7 @@ document.addEventListener("DOMContentLoaded", () => {
             labelText.setAttribute("x", x + w/2);
             labelText.setAttribute("y", margin.top + height + 16);
             labelText.setAttribute("text-anchor", "middle");
-            labelText.setAttribute("fill", "#d1d5db");
+            labelText.setAttribute("fill", "var(--text-primary)");
             labelText.setAttribute("font-size", "9");
             labelText.setAttribute("font-weight", "bold");
             labelText.textContent = labels[i];
@@ -520,7 +531,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 // Normalize color between cyan (positive) and violet (negative)
                 // Zero is represented by dark slate
-                let color = "rgba(31, 41, 55, 0.4)";
+                let color = "var(--heatmap-zero)";
                 if (val > 0) {
                     const intensity = val / (maxVal || 1);
                     color = `rgba(6, 182, 212, ${Math.max(0.15, intensity)})`;
@@ -536,7 +547,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 rect.setAttribute("height", cellSize);
                 rect.setAttribute("fill", color);
                 rect.setAttribute("rx", "2");
-                rect.setAttribute("stroke", "rgba(255, 255, 255, 0.05)");
+                rect.setAttribute("stroke", "var(--panel-border)");
 
                 const tooltip = document.createElementNS(svgns, "title");
                 tooltip.textContent = `[Row ${r}, Col ${c}]: ${val.toFixed(5)}`;

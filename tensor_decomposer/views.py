@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import time
 
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
@@ -55,6 +56,7 @@ def _build_base_context(tensor: object | None, algorithm: str, action: str) -> d
         "algorithm_labels": ALGORITHM_LABELS,
         "tensor_methods": TENSOR_METHODS,
         "reference_methods": REFERENCE_METHODS,
+        "cache_buster": str(int(time.time())),
     }
     if tensor is not None:
         context["tensor"] = tensor
