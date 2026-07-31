@@ -243,9 +243,11 @@ document.addEventListener("DOMContentLoaded", () => {
             } 
             else if (action === "benchmark") {
                 if (data.benchmark) {
-                    document.getElementById("metric-avg-time").textContent = `${data.benchmark.average_ms} ms`;
-                    document.getElementById("metric-min-time").textContent = `${data.benchmark.min_ms} ms`;
-                    document.getElementById("metric-max-time").textContent = `${data.benchmark.max_ms} ms`;
+                    document.getElementById("metric-avg-time").textContent = `${data.benchmark.execution_time_ms} ms`;
+                    document.getElementById("metric-min-time").textContent = data.benchmark.flops_str;
+                    document.getElementById("metric-max-time").textContent = data.benchmark.complexity;
+                    document.getElementById("metric-compression-ratio").textContent = `${data.benchmark.compression_ratio}x`;
+                    document.getElementById("metric-benchmark-params").textContent = `${data.benchmark.compressed_parameters} / ${data.benchmark.original_parameters}`;
                     document.getElementById("metric-runs").textContent = data.benchmark.repeats;
                     
                     panelBenchmark.querySelector("pre").textContent = formatSimpleJSON(data.benchmark);
@@ -851,34 +853,35 @@ document.addEventListener("DOMContentLoaded", () => {
         grid.className = "visual-grid single";
         container.appendChild(grid);
 
-        const card = createVisualCard("Execution Times (ms)");
+        const card = createVisualCard("Execution Metrics");
         
-        // Simple horizontal bar chart for benchmarking min/avg/max
         const wrapper = document.createElement("div");
         wrapper.className = "benchmark-bars";
         
-        const metrics = [
-            { label: "Min Duration", value: benchmark.min_ms, color: "#10b981" },
-            { label: "Avg Duration", value: benchmark.average_ms, color: "#6366f1" },
-            { label: "Max Duration", value: benchmark.max_ms, color: "#f43f5e" }
-        ];
+        // Single Execution Time
+        const rowTime = document.createElement("div");
+        rowTime.className = "benchmark-bar-row";
+        rowTime.innerHTML = `
+            <div class="benchmark-bar-label">Execution Time</div>
+            <div class="benchmark-bar-track">
+                <div class="benchmark-bar-fill" style="width: 100%; background-color: #6366f1"></div>
+            </div>
+            <div class="benchmark-bar-val font-mono">${benchmark.execution_time_ms} ms</div>
+        `;
+        wrapper.appendChild(rowTime);
 
-        const maxVal = Math.max(...metrics.map(m => m.value)) || 1;
-
-        metrics.forEach(m => {
-            const row = document.createElement("div");
-            row.className = "benchmark-bar-row";
-            const percent = (m.value / maxVal) * 100;
-            
-            row.innerHTML = `
-                <div class="benchmark-bar-label">${m.label}</div>
-                <div class="benchmark-bar-track">
-                    <div class="benchmark-bar-fill" style="width: ${percent}%; background-color: ${m.color}"></div>
-                </div>
-                <div class="benchmark-bar-val font-mono">${m.value} ms</div>
-            `;
-            wrapper.appendChild(row);
-        });
+        // Computational FLOPs
+        const rowFlops = document.createElement("div");
+        rowFlops.className = "benchmark-bar-row";
+        rowFlops.style.marginTop = "0.75rem";
+        rowFlops.innerHTML = `
+            <div class="benchmark-bar-label">Computational FLOPs</div>
+            <div class="benchmark-bar-track">
+                <div class="benchmark-bar-fill" style="width: 100%; background-color: #10b981"></div>
+            </div>
+            <div class="benchmark-bar-val font-mono">${benchmark.flops_str}</div>
+        `;
+        wrapper.appendChild(rowFlops);
 
         card.appendChild(wrapper);
         grid.appendChild(card);

@@ -224,16 +224,24 @@
                     </div>
                     <div class="metric-grid">
                         <div class="metric-card">
-                            <span class="metric-label">Average Time</span>
-                            <strong id="metric-avg-time" class="text-indigo">{{ benchmark.average_ms }} ms</strong>
+                            <span class="metric-label">Execution Time</span>
+                            <strong id="metric-avg-time" class="text-indigo">{{ benchmark.execution_time_ms }} ms</strong>
                         </div>
                         <div class="metric-card">
-                            <span class="metric-label">Minimum Time</span>
-                            <strong id="metric-min-time" class="text-teal">{{ benchmark.min_ms }} ms</strong>
+                            <span class="metric-label">Estimated FLOPs</span>
+                            <strong id="metric-min-time" class="text-teal">{{ benchmark.flops_str }}</strong>
                         </div>
                         <div class="metric-card">
-                            <span class="metric-label">Maximum Time</span>
-                            <strong id="metric-max-time" class="text-pink">{{ benchmark.max_ms }} ms</strong>
+                            <span class="metric-label">Complexity Formula</span>
+                            <strong id="metric-max-time" class="text-pink">{{ benchmark.complexity }}</strong>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-label">Compression Ratio</span>
+                            <strong id="metric-compression-ratio" class="text-cyan">{{ benchmark.compression_ratio }}x</strong>
+                        </div>
+                        <div class="metric-card">
+                            <span class="metric-label">Parameters (Compressed / Org)</span>
+                            <strong id="metric-benchmark-params" class="text-indigo">{{ benchmark.compressed_parameters }} / {{ benchmark.original_parameters }}</strong>
                         </div>
                         <div class="metric-card">
                             <span class="metric-label">Runs Measured</span>
