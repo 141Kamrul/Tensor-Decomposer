@@ -275,7 +275,7 @@
                                     <th>Method</th>
                                     <th>Compression Ratio</th>
                                     <th>Relative Error</th>
-                                    <th>Compressed Parameters</th>
+                                    <th>Execution Time</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -284,7 +284,7 @@
                                         <td class="font-semibold text-cyan-400">{{ row.algorithm|upper }}</td>
                                         <td><span class="badge badge-teal">{{ row.compression_ratio }}x</span></td>
                                         <td><span class="badge badge-purple">{{ row.relative_error }}</span></td>
-                                        <td class="font-mono text-gray-300">{{ row.compressed_parameters }}</td>
+                                        <td class="font-mono text-gray-300">{{ row.execution_time_ms }} ms</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>

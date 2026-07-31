@@ -39,20 +39,53 @@ def analyze_decomposition(array: np.ndarray, algorithm: str, result: dict[str, A
 
 
 def compare_methods(array: np.ndarray, algorithms: Iterable[str]) -> list[dict[str, Any]]:
+    from time import perf_counter
+    from .benchmark import estimate_flops, get_complexity_formula
+
     comparison: list[dict[str, Any]] = []
     for algorithm in algorithms:
-        result = run_algorithm(array, algorithm)
+        # Time the algorithm (average of 3 runs for stability)
+        durations = []
+        result = None
+        for _ in range(3):
+            t0 = perf_counter()
+            result = run_algorithm(array, algorithm)
+            durations.append((perf_counter() - t0) * 1000)
+
+        execution_time_ms = round(float(sum(durations) / len(durations)), 3)
         analysis = analyze_decomposition(array, algorithm, result)
+
+        # Estimate FLOPS and complexity formula
+        flops = estimate_flops(array.shape, algorithm, result)
+        if flops >= 1e9:
+            flops_str = f"{flops / 1e9:.2f} GFLOPs"
+        elif flops >= 1e6:
+            flops_str = f"{flops / 1e6:.2f} MFLOPs"
+        elif flops >= 1e3:
+            flops_str = f"{flops / 1e3:.2f} KFLOPs"
+        else:
+            flops_str = f"{flops} FLOPs"
+        complexity = get_complexity_formula(array.shape, algorithm)
+
         comparison.append(
             {
                 "algorithm": algorithm,
                 "compression_ratio": analysis["compression_ratio"],
                 "relative_error": analysis["relative_error"],
+                "absolute_error": analysis["absolute_error"],
+                "mean_absolute_error": analysis["mean_absolute_error"],
+                "root_mean_squared_error": analysis["root_mean_squared_error"],
+                "original_parameters": analysis["original_parameters"],
                 "compressed_parameters": analysis["compressed_parameters"],
+                "execution_time_ms": execution_time_ms,
+                "flops": flops,
+                "flops_str": flops_str,
+                "complexity": complexity,
             }
         )
 
     return comparison
+
 
 
 def reconstruct_tensor(algorithm: str, result: dict[str, Any]) -> np.ndarray:

@@ -190,7 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         <td class="font-semibold text-cyan-400">${row.algorithm.toUpperCase()}</td>
                         <td><span class="badge badge-teal">${row.compression_ratio}x</span></td>
                         <td><span class="badge badge-purple">${row.relative_error}</span></td>
-                        <td class="font-mono text-gray-300">${row.compressed_parameters}</td>
+                        <td class="font-mono text-gray-300">${row.execution_time_ms} ms</td>
                     `;
                     tbody.appendChild(tr);
                 });
@@ -914,6 +914,12 @@ document.addEventListener("DOMContentLoaded", () => {
         const ratios = comparison.map(c => c.compression_ratio);
         ratioCard.appendChild(createComparisonBarChart(labels, ratios, "#06b6d4"));
         grid.appendChild(ratioCard);
+
+        // 3. Execution time comparison
+        const timeCard = createVisualCard("Execution Time (ms) (Lower is Better)");
+        const times = comparison.map(c => c.execution_time_ms);
+        timeCard.appendChild(createComparisonBarChart(labels, times, "#ec4899"));
+        grid.appendChild(timeCard);
     }
 
     function createVisualCard(title, subtitle) {

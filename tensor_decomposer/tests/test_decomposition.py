@@ -2,7 +2,7 @@ import numpy as np
 from django.test import SimpleTestCase
 
 from tensor_decomposer.decomposition import parse_tensor_input, run_decomposition
-from tensor_decomposer.services.analysis import analyze_decomposition
+from tensor_decomposer.services.analysis import analyze_decomposition, compare_methods
 from tensor_decomposer.services.benchmark import benchmark_algorithm
 
 
@@ -43,3 +43,16 @@ class DecompositionTests(SimpleTestCase):
         self.assertGreater(analysis["compression_ratio"], 0)
         self.assertIn("execution_time_ms", benchmark)
         self.assertEqual(benchmark["repeats"], 2)
+
+    def test_compare_methods_service(self):
+        array = np.arange(8, dtype=float).reshape(2, 2, 2)
+        comparison = compare_methods(array, ["cp", "hosvd"])
+        self.assertEqual(len(comparison), 2)
+        for row in comparison:
+            self.assertIn("algorithm", row)
+            self.assertIn("compression_ratio", row)
+            self.assertIn("relative_error", row)
+            self.assertIn("mean_absolute_error", row)
+            self.assertIn("root_mean_squared_error", row)
+            self.assertIn("execution_time_ms", row)
+            self.assertIn("flops", row)
