@@ -13,6 +13,25 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
     
+    
+    // Mutual exclusion between manual text input and file upload
+    const inputTextArea = document.getElementById("tensor_input");
+    const fileInputField = document.getElementById("tensor_file");
+    
+    if (inputTextArea && fileInputField) {
+        inputTextArea.addEventListener("input", () => {
+            if (inputTextArea.value.trim() !== "") {
+                fileInputField.value = "";
+            }
+        });
+        
+        fileInputField.addEventListener("change", () => {
+            if (fileInputField.files.length > 0) {
+                inputTextArea.value = "";
+            }
+        });
+    }
+
     // Panel elements
     const panelError = document.getElementById("panel-error");
     const panelDecomposition = document.getElementById("panel-decomposition");
@@ -31,6 +50,14 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
     `;
     document.body.appendChild(loader);
+
+    // Input state tracking and response caching variables
+    let lastInputState = {
+        tensorInput: "",
+        tensorFile: "",
+        algorithm: ""
+    };
+    let cachedDecomp = null;
 
     // Form submission via AJAX
     form.addEventListener("submit", async (e) => {
@@ -53,11 +80,42 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
+        const currentInputState = {
+            tensorInput: tensorInput,
+            tensorFile: tensorFile ? tensorFile.name : "",
+            algorithm: document.getElementById("algorithm").value
+        };
+
+        const inputChanged = 
+            currentInputState.tensorInput !== lastInputState.tensorInput ||
+            currentInputState.tensorFile !== lastInputState.tensorFile ||
+            currentInputState.algorithm !== lastInputState.algorithm;
+
+        if (inputChanged) {
+            hideAllPanels();
+            cachedDecomp = null;
+            lastInputState = currentInputState;
+        }
+
         // Show loading state
         loader.classList.add("active");
-        hideAllPanels();
 
         try {
+            // Determine if we can use cached decomposition data
+            if ((action === "decompose" || action === "analyze" || action === "visualize") && cachedDecomp) {
+                // Use cached data
+                handleSuccess(action, cachedDecomp);
+                return;
+            }
+
+            // Otherwise, make the network request
+            // If the action is visualize or analyze, we request 'decompose' to get all factors & analysis
+            let requestAction = action;
+            if (action === "visualize" || action === "analyze") {
+                requestAction = "decompose";
+            }
+            formData.set("action", requestAction);
+
             const response = await fetch("", {
                 method: "POST",
                 body: formData,
@@ -70,6 +128,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (!response.ok) {
                 throw new Error(data.error || "An error occurred during decomposition.");
+            }
+
+            if (requestAction === "decompose") {
+                cachedDecomp = data;
             }
 
             // Update UI based on action
@@ -88,6 +150,12 @@ document.addEventListener("DOMContentLoaded", () => {
         panelBenchmark.classList.add("hidden");
         panelComparison.classList.add("hidden");
         panelVisualization.classList.add("hidden");
+        
+        // Hide nested visualization containers
+        const bViz = document.getElementById("benchmark-visualization-container");
+        if (bViz) bViz.style.display = "none";
+        const cViz = document.getElementById("comparison-visualization-container");
+        if (cViz) cViz.style.display = "none";
     }
 
     function showError(message) {
@@ -102,54 +170,16 @@ document.addEventListener("DOMContentLoaded", () => {
         // Clear any previous error
         panelError.classList.add("hidden");
 
-        // 1. Handle Decomposition / Analysis actions
-        if (action === "decompose" || action === "analyze") {
-            if (data.result) {
-                const pre = panelDecomposition.querySelector("pre");
-                const dl = panelDecomposition.querySelector(".download-btn");
-                pre.textContent = formatResultMatrixStyle(data.result);
-                if (dl && data.download_url) {
-                    dl.href = `/download/${data.download_url}/`;
-                    dl.classList.remove("hidden");
-                }
-                panelDecomposition.classList.remove("hidden");
-            }
-
-            if (data.analysis) {
-                // Update analysis metrics
-                document.getElementById("metric-compression").textContent = data.analysis.compression_ratio;
-                document.getElementById("metric-abs-error").textContent = data.analysis.absolute_error;
-                document.getElementById("metric-rel-error").textContent = data.analysis.relative_error;
-                document.getElementById("metric-params").textContent = `${data.analysis.compressed_parameters} / ${data.analysis.original_parameters}`;
-                
-                panelAnalysis.querySelector("pre").textContent = formatAnalysisStyle(data.analysis);
-                panelAnalysis.classList.remove("hidden");
-            }
+        if (action === "compare") {
+            // Hide all individual panels when showing comparison
+            panelDecomposition.classList.add("hidden");
+            panelAnalysis.classList.add("hidden");
+            panelVisualization.classList.add("hidden");
+            panelBenchmark.classList.add("hidden");
             
-            // Build visual representations
-            if (data.result) {
-                renderVisualizations(data.algorithm, data.result);
-            }
-        } 
-        
-        // 2. Handle Benchmarking action
-        else if (action === "benchmark") {
-            if (data.benchmark) {
-                document.getElementById("metric-avg-time").textContent = `${data.benchmark.average_ms} ms`;
-                document.getElementById("metric-min-time").textContent = `${data.benchmark.min_ms} ms`;
-                document.getElementById("metric-max-time").textContent = `${data.benchmark.max_ms} ms`;
-                document.getElementById("metric-runs").textContent = data.benchmark.repeats;
-                
-                panelBenchmark.querySelector("pre").textContent = formatSimpleJSON(data.benchmark);
-                panelBenchmark.classList.remove("hidden");
-                
-                // Visualize benchmarks
-                renderBenchmarkChart(data.benchmark);
-            }
-        } 
-        
-        // 3. Handle Comparison action
-        else if (action === "compare") {
+            const bViz = document.getElementById("benchmark-visualization-container");
+            if (bViz) bViz.style.display = "none";
+
             if (data.comparison) {
                 const tbody = panelComparison.querySelector("tbody");
                 tbody.innerHTML = "";
@@ -170,11 +200,63 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 // Visualize comparison
                 renderComparisonCharts(data.comparison);
+                panelComparison.scrollIntoView({ behavior: "smooth", block: "nearest" });
+            }
+        } 
+        else {
+            // Hide comparison panel when showing any individual panel
+            panelComparison.classList.add("hidden");
+            const cViz = document.getElementById("comparison-visualization-container");
+            if (cViz) cViz.style.display = "none";
+
+            if (action === "decompose") {
+                if (data.result) {
+                    const pre = panelDecomposition.querySelector("pre");
+                    const dl = panelDecomposition.querySelector(".download-btn");
+                    pre.textContent = formatResultMatrixStyle(data.result);
+                    if (dl && data.download_url) {
+                        dl.href = `/download/${data.download_url}/`;
+                        dl.classList.remove("hidden");
+                    }
+                    panelDecomposition.classList.remove("hidden");
+                    panelDecomposition.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                }
+            } 
+            else if (action === "analyze") {
+                if (data.analysis) {
+                    // Update analysis metrics
+                    document.getElementById("metric-compression").textContent = data.analysis.compression_ratio;
+                    document.getElementById("metric-abs-error").textContent = data.analysis.absolute_error;
+                    document.getElementById("metric-rel-error").textContent = data.analysis.relative_error;
+                    document.getElementById("metric-params").textContent = `${data.analysis.compressed_parameters} / ${data.analysis.original_parameters}`;
+                    
+                    panelAnalysis.querySelector("pre").textContent = formatAnalysisStyle(data.analysis);
+                    panelAnalysis.classList.remove("hidden");
+                    panelAnalysis.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                }
+            } 
+            else if (action === "visualize") {
+                if (data.result) {
+                    renderVisualizations(data.algorithm, data.result);
+                    panelVisualization.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                }
+            } 
+            else if (action === "benchmark") {
+                if (data.benchmark) {
+                    document.getElementById("metric-avg-time").textContent = `${data.benchmark.average_ms} ms`;
+                    document.getElementById("metric-min-time").textContent = `${data.benchmark.min_ms} ms`;
+                    document.getElementById("metric-max-time").textContent = `${data.benchmark.max_ms} ms`;
+                    document.getElementById("metric-runs").textContent = data.benchmark.repeats;
+                    
+                    panelBenchmark.querySelector("pre").textContent = formatSimpleJSON(data.benchmark);
+                    panelBenchmark.classList.remove("hidden");
+                    
+                    // Visualize benchmarks
+                    renderBenchmarkChart(data.benchmark);
+                    panelBenchmark.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                }
             }
         }
-        
-        // Scroll to results
-        resultsColumn.scrollIntoView({ behavior: "smooth" });
     }
 
     // --- Visualization Engine ---
@@ -243,9 +325,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function renderBenchmarkChart(benchmark) {
-        const container = document.getElementById("visualization-container");
+        const container = document.getElementById("benchmark-visualization-container");
+        if (!container) return;
         container.innerHTML = "";
-        panelVisualization.classList.remove("hidden");
+        container.style.display = "block";
 
         const header = document.createElement("h3");
         header.className = "visual-title";
@@ -290,9 +373,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function renderComparisonCharts(comparison) {
-        const container = document.getElementById("visualization-container");
+        const container = document.getElementById("comparison-visualization-container");
+        if (!container) return;
         container.innerHTML = "";
-        panelVisualization.classList.remove("hidden");
+        container.style.display = "block";
 
         const header = document.createElement("h3");
         header.className = "visual-title";

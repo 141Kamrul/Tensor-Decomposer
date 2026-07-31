@@ -108,6 +108,11 @@ def home(request: HttpRequest) -> HttpResponse:
 
             result = run_decomposition(tensor, algorithm)
             analysis = analyze_decomposition(tensor, algorithm, result)
+            
+            source_name = Path(uploaded_file.name).stem if uploaded_file else "manual"
+            comp_ratio = round(analysis.get("compression_ratio", 0))
+            export_filename = f"decomposed_{algorithm}_{comp_ratio}_{source_name}.json"
+
             export_path = export_result(
                 {
                     "tensor": tensor_data,
@@ -116,6 +121,7 @@ def home(request: HttpRequest) -> HttpResponse:
                     "result": result,
                     "analysis": analysis,
                 },
+                filename=export_filename,
                 output_dir=Path("results"),
             )
             context = _build_base_context(tensor_data, algorithm, action)
@@ -145,4 +151,6 @@ def download_result(request: HttpRequest, filename: str) -> HttpResponse:
     file_path = Path("results") / filename
     if not file_path.exists():
         return HttpResponse("File not found", status=404)
-    return HttpResponse(file_path.read_text(encoding="utf-8"), content_type="application/json")
+    response = HttpResponse(file_path.read_text(encoding="utf-8"), content_type="application/json")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response

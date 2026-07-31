@@ -151,11 +151,14 @@
                         </div>
                     </div>
 
-                    <div class="action-row">
+                    <div class="action-grid">
                         <button type="submit" name="action" value="decompose" class="btn btn-primary">Decompose</button>
-                        <button type="submit" name="action" value="analyze" class="btn btn-secondary">Analyze Error</button>
-                        <button type="submit" name="action" value="benchmark" class="btn btn-secondary">Benchmark</button>
-                        <button type="submit" name="action" value="compare" class="btn btn-secondary">Compare All</button>
+                        <button type="submit" name="action" value="visualize" class="btn btn-primary">Visualize</button>
+                        
+                        <button type="submit" name="action" value="benchmark" class="btn btn-primary">Benchmark &amp; Compression</button>
+                        <button type="submit" name="action" value="analyze" class="btn btn-primary">Restruct &amp; Accuracy</button>
+                        
+                        <button type="submit" name="action" value="compare" class="btn btn-compare full-width">Compare All Methods</button>
                     </div>
                 </form>
             </section>
@@ -177,7 +180,7 @@
                 <article id="panel-decomposition" class="panel result-block {% if not result_json %}hidden{% endif %}">
                     <div class="panel-header-row">
                         <h2>Decomposition Factors</h2>
-                        <a href="{% if download_url %}{% url 'download_result' download_url %}{% endif %}" class="download-btn {% if not download_url %}hidden{% endif %}" target="_blank">
+                        <a href="{% if download_url %}{% url 'download_result' download_url %}{% endif %}" class="download-btn {% if not download_url %}hidden{% endif %}" download target="_blank">
                             <span>Download JSON</span> 📥
                         </a>
                     </div>
@@ -237,7 +240,13 @@
                             <strong id="metric-runs" class="text-gray">{{ benchmark.repeats }}</strong>
                         </div>
                     </div>
-                    <div class="code-container">
+                    
+                    <!-- Nested benchmark visualization -->
+                    <div id="benchmark-visualization-container" class="visualization-wrapper" style="margin-top: 1.5rem; display: none;">
+                        <!-- Benchmark charts generated via JS -->
+                    </div>
+
+                    <div class="code-container" style="margin-top: 1.5rem;">
                         <pre>{{ benchmark_json }}</pre>
                     </div>
                 </article>
@@ -269,7 +278,13 @@
                             </tbody>
                         </table>
                     </div>
-                    <div class="code-container">
+
+                    <!-- Nested comparison visualization -->
+                    <div id="comparison-visualization-container" class="visualization-wrapper" style="margin-top: 1.5rem; display: none;">
+                        <!-- Comparison charts generated via JS -->
+                    </div>
+
+                    <div class="code-container" style="margin-top: 1.5rem;">
                         <pre>{{ comparison_json }}</pre>
                     </div>
                 </article>
