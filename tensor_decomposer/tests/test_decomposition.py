@@ -37,6 +37,9 @@ class DecompositionTests(SimpleTestCase):
 
         self.assertIn("compression_ratio", analysis)
         self.assertIn("relative_error", analysis)
+        self.assertIn("mean_absolute_error", analysis)
+        self.assertIn("root_mean_squared_error", analysis)
+        self.assertIn("reconstructed_head", analysis)
         self.assertGreater(analysis["compression_ratio"], 0)
-        self.assertIn("average_ms", benchmark)
+        self.assertIn("execution_time_ms", benchmark)
         self.assertEqual(benchmark["repeats"], 2)

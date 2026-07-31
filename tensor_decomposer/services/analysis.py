@@ -13,6 +13,15 @@ def analyze_decomposition(array: np.ndarray, algorithm: str, result: dict[str, A
     reconstructed = reconstruct_tensor(algorithm, result)
     absolute_error = float(np.linalg.norm(tensor - reconstructed))
     relative_error = float(absolute_error / (np.linalg.norm(tensor) + 1e-12))
+    
+    # Calculate Mean Absolute Error (MAE) and Root Mean Squared Error (RMSE)
+    mean_absolute_error = float(np.mean(np.abs(tensor - reconstructed)))
+    root_mean_squared_error = float(np.sqrt(np.mean((tensor - reconstructed) ** 2)))
+    
+    # Calculate reconstructed matrix/tensor element head: min(10, len(tensor))
+    head_len = min(10, len(tensor)) if tensor.ndim > 0 else 0
+    reconstructed_head = reconstructed[:head_len] if tensor.ndim > 0 else reconstructed
+
     compressed_parameters = count_compressed_parameters(algorithm, result)
     original_parameters = int(tensor.size)
 
@@ -22,7 +31,10 @@ def analyze_decomposition(array: np.ndarray, algorithm: str, result: dict[str, A
         "compressed_parameters": compressed_parameters,
         "compression_ratio": round(float(original_parameters / max(1, compressed_parameters)), 3),
         "absolute_error": round(absolute_error, 6),
+        "mean_absolute_error": round(mean_absolute_error, 6),
+        "root_mean_squared_error": round(root_mean_squared_error, 6),
         "relative_error": round(relative_error, 6),
+        "reconstructed_head": reconstructed_head,
     }
 
 

@@ -192,26 +192,30 @@
                 <!-- Reconstruction Analysis -->
                 <article id="panel-analysis" class="panel result-block {% if not analysis_json %}hidden{% endif %}">
                     <div class="panel-header-row">
-                        <h2>Accuracy & Size Metrics</h2>
+                        <h2>Accuracy Metrics</h2>
                     </div>
-                    <div class="metric-grid">
+                    <div class="metric-grid-three">
                         <div class="metric-card">
-                            <span class="metric-label">Compression Ratio</span>
-                            <strong id="metric-compression" class="text-teal">{{ analysis.compression_ratio }}</strong>
+                            <span class="metric-label">Mean Absolute Error (MAE)</span>
+                            <strong id="metric-mae" class="text-purple">{{ analysis.mean_absolute_error }}</strong>
                         </div>
                         <div class="metric-card">
-                            <span class="metric-label">L2 Absolute Error</span>
-                            <strong id="metric-abs-error" class="text-purple">{{ analysis.absolute_error }}</strong>
+                            <span class="metric-label">Root Mean Squared Error (RMSE)</span>
+                            <strong id="metric-rmse" class="text-teal">{{ analysis.root_mean_squared_error }}</strong>
                         </div>
                         <div class="metric-card">
-                            <span class="metric-label">L2 Relative Error</span>
+                            <span class="metric-label">Relative Error</span>
                             <strong id="metric-rel-error" class="text-blue">{{ analysis.relative_error }}</strong>
                         </div>
-                        <div class="metric-card">
-                            <span class="metric-label">Params (Compressed / Org)</span>
-                            <strong id="metric-params" class="text-gray">{{ analysis.compressed_parameters }} / {{ analysis.original_parameters }}</strong>
+                    </div>
+                    
+                    <div class="reconstructed-head-wrapper" style="margin-top: 1rem;">
+                        <span class="metric-label" style="display: block; margin-bottom: 0.5rem;">Reconstructed Matrix Element Head (min(10, len(tensor)))</span>
+                        <div class="code-container" style="max-height: 15rem;">
+                            <pre id="metric-recon-head">{{ analysis.reconstructed_head }}</pre>
                         </div>
                     </div>
+
                     <div class="code-container">
                         <pre>{{ analysis_json }}</pre>
                     </div>

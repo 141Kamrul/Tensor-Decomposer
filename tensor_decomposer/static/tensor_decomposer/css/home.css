@@ -511,6 +511,12 @@ pre {
     gap: 1rem;
 }
 
+.metric-grid-three {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
 .metric-card {
     background: var(--card-bg);
     border: 1px solid var(--card-border);
@@ -789,7 +795,7 @@ tr:hover td {
         gap: 0.75rem;
     }
     
-    .metric-grid {
+    .metric-grid, .metric-grid-three {
         grid-template-columns: 1fr;
     }
     

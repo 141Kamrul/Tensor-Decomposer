@@ -225,10 +225,10 @@ document.addEventListener("DOMContentLoaded", () => {
             else if (action === "analyze") {
                 if (data.analysis) {
                     // Update analysis metrics
-                    document.getElementById("metric-compression").textContent = data.analysis.compression_ratio;
-                    document.getElementById("metric-abs-error").textContent = data.analysis.absolute_error;
-                    document.getElementById("metric-rel-error").textContent = data.analysis.relative_error;
-                    document.getElementById("metric-params").textContent = `${data.analysis.compressed_parameters} / ${data.analysis.original_parameters}`;
+                    document.getElementById("metric-mae").textContent = formatNumber(data.analysis.mean_absolute_error);
+                    document.getElementById("metric-rmse").textContent = formatNumber(data.analysis.root_mean_squared_error);
+                    document.getElementById("metric-rel-error").textContent = formatNumber(data.analysis.relative_error);
+                    document.getElementById("metric-recon-head").textContent = formatValue(data.analysis.reconstructed_head);
                     
                     panelAnalysis.querySelector("pre").textContent = formatAnalysisStyle(data.analysis);
                     panelAnalysis.classList.remove("hidden");
@@ -1295,6 +1295,19 @@ document.addEventListener("DOMContentLoaded", () => {
             try {
                 const parsed = JSON.parse(analysisPre.textContent);
                 analysisPre.textContent = formatAnalysisStyle(parsed);
+                
+                if (parsed.mean_absolute_error !== undefined) {
+                    document.getElementById("metric-mae").textContent = formatNumber(parsed.mean_absolute_error);
+                }
+                if (parsed.root_mean_squared_error !== undefined) {
+                    document.getElementById("metric-rmse").textContent = formatNumber(parsed.root_mean_squared_error);
+                }
+                if (parsed.relative_error !== undefined) {
+                    document.getElementById("metric-rel-error").textContent = formatNumber(parsed.relative_error);
+                }
+                if (parsed.reconstructed_head !== undefined) {
+                    document.getElementById("metric-recon-head").textContent = formatValue(parsed.reconstructed_head);
+                }
             } catch (e) {
                 // Error
             }
