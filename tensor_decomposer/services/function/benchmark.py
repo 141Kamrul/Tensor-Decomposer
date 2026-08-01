@@ -5,7 +5,7 @@ from typing import Any
 
 import numpy as np
 
-from .algorithms import run_algorithm
+from ..algorithms import run_algorithm
 from .analysis import analyze_decomposition
 
 

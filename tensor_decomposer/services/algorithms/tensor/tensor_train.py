@@ -4,7 +4,7 @@ from typing import Any
 
 import numpy as np
 
-from ..tensor_utils import as_float_tensor
+from ...function.tensor_utils import as_float_tensor
 
 
 def tensor_train(array: np.ndarray, max_rank: int = 4) -> dict[str, Any]:

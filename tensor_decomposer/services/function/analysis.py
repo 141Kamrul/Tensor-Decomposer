@@ -4,7 +4,7 @@ from typing import Any, Iterable
 
 import numpy as np
 
-from .algorithms import run_algorithm
+from ..algorithms import run_algorithm
 from .tensor_utils import count_parameters, reconstruct_cp, reconstruct_tt, reconstruct_tucker
 
 

@@ -4,7 +4,7 @@ from typing import Any
 
 import numpy as np
 
-from ..tensor_utils import as_float_tensor, mode_n_product, unfold_tensor
+from ...function.tensor_utils import as_float_tensor, mode_n_product, unfold_tensor
 
 
 def hosvd(array: np.ndarray) -> dict[str, Any]:

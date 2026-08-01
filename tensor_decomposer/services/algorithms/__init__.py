@@ -5,12 +5,12 @@ from typing import Any
 import numpy as np
 
 from .matrix.lu import lu
-from .cp import cp
+from .tensor.cp import cp
 from .matrix.eigendecomposition import eigendecomposition
-from .hosvd import hosvd
+from .tensor.hosvd import hosvd
 from .matrix.qr import qr
-from .tensor_train import tensor_train
-from .tucker import tucker
+from .tensor.tensor_train import tensor_train
+from .tensor.tucker import tucker
 from .matrix.svd import svd
 
 SUPPORTED_ALGORITHMS: tuple[str, ...] = (
