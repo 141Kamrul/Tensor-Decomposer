@@ -9,7 +9,7 @@ def as_float_tensor(array: np.ndarray) -> np.ndarray:
     return np.asarray(array, dtype=float)
 
 
-def unfold_tensor(tensor: np.ndarray, mode: int) -> np.ndarray:
+def matricization(tensor: np.ndarray, mode: int) -> np.ndarray:
     moved = np.moveaxis(tensor, mode, 0)
     return moved.reshape(tensor.shape[mode], -1)
 
@@ -24,6 +24,18 @@ def multi_mode_product(tensor: np.ndarray, matrices: Iterable[np.ndarray]) -> np
     for mode, matrix in enumerate(matrices):
         result = mode_n_product(result, matrix, mode)
     return result
+
+
+def khatri_rao(matrices: list[np.ndarray]) -> np.ndarray:
+    if not matrices:
+        raise ValueError("Khatri-Rao product requires at least one matrix")
+    result = matrices[0]
+    for mat in matrices[1:]:
+        if result.shape[1] != mat.shape[1]:
+            raise ValueError(f"Column count mismatch for Khatri-Rao product: {result.shape[1]} vs {mat.shape[1]}")
+        result = (result[:, None, :] * mat[None, :, :]).reshape(-1, result.shape[1])
+    return result
+
 
 
 def reconstruct_cp(weights: np.ndarray, factors: list[np.ndarray]) -> np.ndarray:

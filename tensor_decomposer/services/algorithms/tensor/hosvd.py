@@ -4,7 +4,7 @@ from typing import Any
 
 import numpy as np
 
-from ...function.tensor_utils import as_float_tensor, mode_n_product, unfold_tensor
+from ...function.tensor_utils import as_float_tensor, mode_n_product, matricization
 
 
 def hosvd(array: np.ndarray) -> dict[str, Any]:
@@ -14,7 +14,7 @@ def hosvd(array: np.ndarray) -> dict[str, Any]:
 
     factors: list[np.ndarray] = []
     for mode in range(tensor.ndim):
-        unfolding = unfold_tensor(tensor, mode)
+        unfolding = matricization(tensor, mode)
         u, _, _ = np.linalg.svd(unfolding, full_matrices=False)
         factors.append(u)
 
