@@ -10,13 +10,10 @@ from ...function.tensor_utils import as_float_tensor, mode_n_product, matricizat
 def tucker(
     array: np.ndarray,
     ranks: list[int] | None = None,
-    max_iter: int = 50,
-    tol: float = 1e-6,
+    max_iter: int = 100,
+    tol: float = 1e-7,
 ) -> dict[str, Any]:
-    """Computes Tucker tensor decomposition using Higher-Order Orthogonal Iteration (HOOI / Tucker-ALS).
-
-    Reference: Kolda & Bader (2009), SIAM Review, Section 4.2 & Figure 4.4.
-    """
+    
     tensor = as_float_tensor(array)
     if tensor.ndim < 2:
         raise ValueError("Tucker decomposition requires a tensor with at least 2 dimensions")
@@ -69,6 +66,6 @@ def tucker(
         "method": "tucker",
         "core": core,
         "factors": factors,
-        "ranks": ranks,
         "shape": tensor.shape,
+        "ranks": ranks,
     }
