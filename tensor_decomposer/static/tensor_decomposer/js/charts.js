@@ -200,7 +200,7 @@ export function createEquationSVG(algorithm, result, inputTensor) {
     const svgns = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(svgns, "svg");
     svg.setAttribute("viewBox", "0 0 800 350");
-    svg.className = "visual-svg equation-svg";
+    svg.setAttribute("class", "visual-svg equation-svg");
     svg.style.width = "100%";
     svg.style.height = "auto";
     svg.style.maxHeight = "350px";
@@ -521,7 +521,7 @@ export function createBarChartSVG(data) {
     const svgns = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(svgns, "svg");
     svg.setAttribute("viewBox", "0 0 400 200");
-    svg.className = "visual-svg";
+    svg.setAttribute("class", "visual-svg");
 
     const margin = { top: 20, right: 20, bottom: 30, left: 40 };
     const width = 400 - margin.left - margin.right;
@@ -606,7 +606,7 @@ export function createComparisonBarChart(labels, values, color) {
     const svgns = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(svgns, "svg");
     svg.setAttribute("viewBox", "0 0 400 200");
-    svg.className = "visual-svg";
+    svg.setAttribute("class", "visual-svg");
 
     const margin = { top: 20, right: 20, bottom: 40, left: 45 };
     const width = 400 - margin.left - margin.right;
@@ -692,7 +692,7 @@ export function createHeatmapSVG(matrix, actualRows, actualCols, globalMax) {
     const totalH = numRows * cellSize + (numRows - 1) * gap;
     
     svg.setAttribute("viewBox", `0 0 ${totalW} ${totalH}`);
-    svg.className = "visual-svg heatmap";
+    svg.setAttribute("class", "visual-svg heatmap");
     svg.style.aspectRatio = "auto";
     svg.style.maxWidth = "none";
     svg.style.maxHeight = "none";
