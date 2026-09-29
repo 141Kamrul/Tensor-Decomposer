@@ -2,8 +2,8 @@ import numpy as np
 from django.test import SimpleTestCase
 
 from tensor_decomposer.decomposition import parse_tensor_input, run_decomposition
-from tensor_decomposer.services.analysis import analyze_decomposition, compare_methods
-from tensor_decomposer.services.benchmark import benchmark_algorithm
+from tensor_decomposer.services.function.analysis import analyze_decomposition, compare_methods
+from tensor_decomposer.services.function.benchmark import benchmark_algorithm
 
 
 class DecompositionTests(SimpleTestCase):
