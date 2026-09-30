@@ -1,9 +1,21 @@
-import sys
 import os
+import sys
 
-# Add the project root directory to sys.path so Python can find 'config'
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# Add both current working directory and parent directory to sys.path
+root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+cwd = os.getcwd()
 
-from config.wsgi import application
+for p in (root_dir, cwd):
+    if p not in sys.path:
+        sys.path.insert(0, p)
 
-app = application
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+
+try:
+    from config.wsgi import application
+    app = application
+    handler = application
+except Exception as e:
+    import traceback
+    traceback.print_exc()
+    raise e
