@@ -3,16 +3,11 @@ name = "tensor-decomposer"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.10"
 dependencies = [
     "django>=6.0.7",
     "numpy>=2.5.1",
     "pytest>=9.1.1",
     "scikit-learn>=1.9.0",
+    "whitenoise>=6.6.0",
 ]
-
-[tool.vercel]
-entrypoint = "wsgi:app"
-
-
-
