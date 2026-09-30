@@ -23,8 +23,8 @@ def parse_tensor_input(raw_value: str) -> np.ndarray:
     return np.asarray(data, dtype=float)
 
 
-def run_decomposition(array: np.ndarray, algorithm: str) -> dict[str, Any]:
-    return run_algorithm(array, algorithm)
+def run_decomposition(array: np.ndarray, algorithm: str, **kwargs: Any) -> dict[str, Any]:
+    return run_algorithm(array, algorithm, **kwargs)
 
 
 def export_result(result: dict[str, Any], filename: str = "decomposition_result.json", output_dir: str | Path | None = None) -> Path:

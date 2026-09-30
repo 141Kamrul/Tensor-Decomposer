@@ -25,29 +25,29 @@ SUPPORTED_ALGORITHMS: tuple[str, ...] = (
 )
 
 
-def run_algorithm(array: np.ndarray, algorithm: str) -> dict[str, Any]:
+def run_algorithm(array: np.ndarray, algorithm: str, **kwargs: Any) -> dict[str, Any]:
     if algorithm == "cp":
-        return cp(array)
+        return cp(array, **kwargs)
 
     if algorithm == "tucker":
-        return tucker(array)
+        return tucker(array, **kwargs)
 
     if algorithm == "hosvd":
-        return hosvd(array)
+        return hosvd(array, **kwargs)
 
     if algorithm == "tensor_train":
-        return tensor_train(array)
+        return tensor_train(array, **kwargs)
 
     if algorithm == "svd":
-        return svd(array)
+        return svd(array, **kwargs)
 
     if algorithm == "eigendecomposition":
-        return eigendecomposition(array)
+        return eigendecomposition(array, **kwargs)
 
     if algorithm == "qr":
-        return qr(array)
+        return qr(array, **kwargs)
 
     if algorithm == "lu":
-        return lu(array)
+        return lu(array, **kwargs)
 
     raise ValueError(f"Unsupported algorithm while running: {algorithm}")
