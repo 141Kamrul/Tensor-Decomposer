@@ -148,9 +148,17 @@ def home(request: HttpRequest) -> HttpResponse:
 
 
 def download_result(request: HttpRequest, filename: str) -> HttpResponse:
-    file_path = Path("results") / filename
+    import os
+    if os.environ.get("VERCEL"):
+        file_path = Path("/tmp/results") / filename
+    else:
+        file_path = Path("results") / filename
+
+    if not file_path.exists():
+        file_path = Path("results") / filename
     if not file_path.exists():
         return HttpResponse("File not found", status=404)
     response = HttpResponse(file_path.read_text(encoding="utf-8"), content_type="application/json")
     response["Content-Disposition"] = f'attachment; filename="{filename}"'
     return response
+

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from typing import Any
 
@@ -28,7 +29,11 @@ def run_decomposition(array: np.ndarray, algorithm: str, **kwargs: Any) -> dict[
 
 
 def export_result(result: dict[str, Any], filename: str = "decomposition_result.json", output_dir: str | Path | None = None) -> Path:
-    target_dir = Path(output_dir or "results")
+    if os.environ.get("VERCEL"):
+        target_dir = Path("/tmp/results")
+    else:
+        target_dir = Path(output_dir or "results")
+
     target_dir.mkdir(parents=True, exist_ok=True)
 
     export_path = target_dir / filename
