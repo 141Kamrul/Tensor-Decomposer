@@ -12,6 +12,7 @@ dependencies = [
 ]
 
 [tool.vercel]
-entrypoint = "wsgi.py"
+entrypoint = "wsgi:app"
+
 
 
