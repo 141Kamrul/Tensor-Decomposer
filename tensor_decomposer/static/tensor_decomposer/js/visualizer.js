@@ -140,25 +140,26 @@ export function renderComparisonCharts(comparison) {
     container.appendChild(header);
 
     const grid = document.createElement("div");
-    grid.className = "visual-grid";
+    grid.className = "visual-grid comparison-grid";
     container.appendChild(grid);
+
+    const labels = comparison.map(c => c.algorithm);
 
     // 1. Relative error comparison
     const errorCard = createVisualCard("Relative Reconstruction Error (Lower is Better)");
     const errors = comparison.map(c => c.relative_error);
-    const labels = comparison.map(c => c.algorithm.toUpperCase());
-    errorCard.appendChild(createComparisonBarChart(labels, errors, "#8b5cf6"));
+    errorCard.appendChild(createComparisonBarChart(labels, errors, "#8b5cf6", "error"));
     grid.appendChild(errorCard);
 
     // 2. Compression ratio comparison
     const ratioCard = createVisualCard("Compression Ratio (Higher is Better)");
     const ratios = comparison.map(c => c.compression_ratio);
-    ratioCard.appendChild(createComparisonBarChart(labels, ratios, "#06b6d4"));
+    ratioCard.appendChild(createComparisonBarChart(labels, ratios, "#06b6d4", "ratio"));
     grid.appendChild(ratioCard);
 
     // 3. Execution time comparison
     const timeCard = createVisualCard("Execution Time (ms) (Lower is Better)");
     const times = comparison.map(c => c.execution_time_ms);
-    timeCard.appendChild(createComparisonBarChart(labels, times, "#ec4899"));
+    timeCard.appendChild(createComparisonBarChart(labels, times, "#ec4899", "time"));
     grid.appendChild(timeCard);
 }

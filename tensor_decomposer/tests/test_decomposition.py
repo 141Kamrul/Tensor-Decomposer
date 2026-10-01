@@ -135,4 +135,74 @@ class DecompositionTests(SimpleTestCase):
         self.assertEqual(result_explicit["cores"][1].shape, (2, 4, 2))
         self.assertEqual(result_explicit["cores"][2].shape, (2, 2, 1))
 
+    def test_puzzle_tensor_transformation_and_inversion(self):
+        from tensor_decomposer.services.function.puzzle_tensor import (
+            puzzle_tensor,
+            invert_puzzle_tensor,
+            tensor_nuclear_norm_loss,
+        )
+
+        # 1. Test staggered diagonal matrix (rank-3 -> rank-1 structure)
+        diag_matrix = np.eye(5) * 10.0
+        orig_loss = tensor_nuclear_norm_loss(diag_matrix)
+        shifted_matrix, shifts = puzzle_tensor(diag_matrix, return_shifts=True)
+        shifted_loss = tensor_nuclear_norm_loss(shifted_matrix)
+
+        # Nuclear norm loss should be reduced
+        self.assertLess(shifted_loss, orig_loss)
+
+        # Inversion must perfectly recover the original matrix
+        recovered = invert_puzzle_tensor(shifted_matrix, shifts)
+        np.testing.assert_allclose(recovered, diag_matrix, atol=1e-12)
+
+        # 2. Test 3D and 4D tensor transformation and lossless recovery
+        tensor_4d = np.random.randn(3, 4, 2, 3)
+        shifted_4d, ops = puzzle_tensor(tensor_4d, max_iter=1, max_shift=1, return_shifts=True)
+        self.assertEqual(shifted_4d.shape, tensor_4d.shape)
+        recovered_4d = invert_puzzle_tensor(shifted_4d, ops)
+        np.testing.assert_allclose(recovered_4d, tensor_4d, atol=1e-12)
+
+        # 3. Direct call returning only shifted tensor
+        direct_shifted = puzzle_tensor(tensor_4d)
+        self.assertIsInstance(direct_shifted, np.ndarray)
+        self.assertEqual(direct_shifted.shape, tensor_4d.shape)
+
+    def test_puzzle_augmented_algorithms(self):
+        rng = np.random.default_rng(123)
+        tensor = rng.normal(size=(3, 3, 3))
+
+        puzzle_algos = ["cp_puzzle", "tucker_puzzle", "hosvd_puzzle", "tensor_train_puzzle"]
+
+        for algo in puzzle_algos:
+            with self.subTest(algorithm=algo):
+                res = run_decomposition(tensor, algo)
+                self.assertTrue(res.get("is_puzzle"))
+                self.assertIn("shifts", res)
+                self.assertEqual(res["original_shape"], [3, 3, 3])
+
+                # Analyze decomposition
+                analysis = analyze_decomposition(tensor, algo, res)
+                self.assertIn("compression_ratio", analysis)
+                self.assertIn("relative_error", analysis)
+                self.assertIn("compressed_parameters", analysis)
+                self.assertGreater(analysis["compression_ratio"], 0)
+
+                # Benchmark
+                bm = benchmark_algorithm(tensor, algo, repeats=1)
+                self.assertIn("flops", bm)
+                self.assertIn("flops_str", bm)
+                self.assertIn("complexity", bm)
+
+        # Full-rank HOSVD + Puzzle exact reconstruction test
+        hosvd_res = run_decomposition(tensor, "hosvd_puzzle")
+        from tensor_decomposer.services.function.analysis import reconstruct_tensor
+        reconstructed = reconstruct_tensor("hosvd_puzzle", hosvd_res)
+        np.testing.assert_allclose(reconstructed, tensor, atol=1e-5)
+
+        # Syntax check for "+" alias: e.g. "cp+puzzle"
+        alias_res = run_decomposition(tensor, "cp+puzzle")
+        self.assertTrue(alias_res.get("is_puzzle"))
+        self.assertEqual(alias_res["method"], "cp_puzzle")
+
+
 

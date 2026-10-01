@@ -88,56 +88,63 @@ def compare_methods(array: np.ndarray, algorithms: Iterable[str]) -> list[dict[s
 
 
 
+from .puzzle_tensor import invert_puzzle_tensor
+
+
 def reconstruct_tensor(algorithm: str, result: dict[str, Any]) -> np.ndarray:
-    if algorithm == "cp":
-        return reconstruct_cp(result["weights"], result["factors"])
+    norm_algo = algorithm.lower().replace("+", "_")
+    base_algo = norm_algo.replace("_puzzle", "")
 
-    if algorithm == "tucker":
-        return reconstruct_tucker(result["core"], result["factors"])
-
-    if algorithm == "hosvd":
-        return reconstruct_tucker(result["core"], result["factors"])
-
-    if algorithm == "tensor_train":
-        return reconstruct_tt(result["cores"])
-
-    if algorithm == "svd":
-        return result["u"] @ np.diag(result["singular_values"]) @ result["vh"]
-
-    if algorithm == "eigendecomposition":
+    if base_algo == "cp":
+        reconstructed = reconstruct_cp(result["weights"], result["factors"])
+    elif base_algo in ("tucker", "hosvd"):
+        reconstructed = reconstruct_tucker(result["core"], result["factors"])
+    elif base_algo == "tensor_train":
+        reconstructed = reconstruct_tt(result["cores"])
+    elif base_algo == "svd":
+        reconstructed = result["u"] @ np.diag(result["singular_values"]) @ result["vh"]
+    elif base_algo == "eigendecomposition":
         q = result.get("q", result.get("eigenvectors"))
-        return q @ np.diag(result["eigenvalues"]) @ np.linalg.inv(q)
+        reconstructed = q @ np.diag(result["eigenvalues"]) @ np.linalg.inv(q)
+    elif base_algo == "qr":
+        reconstructed = result["q"] @ result["r"]
+    elif base_algo == "lu":
+        reconstructed = result["l"] @ result["u"]
+    else:
+        raise ValueError(f"Unsupported algorithm while reconstructing tensor: {algorithm}")
 
-    if algorithm == "qr":
-        return result["q"] @ result["r"]
+    if result.get("is_puzzle") or "shifts" in result or norm_algo.endswith("_puzzle"):
+        shifts = result.get("shifts", [])
+        if shifts:
+            reconstructed = invert_puzzle_tensor(reconstructed, shifts)
 
-    if algorithm == "lu":
-        return result["l"] @ result["u"]
-
-    raise ValueError(f"Unsupported algorithm while reconstructing tensor: {algorithm}")
+    return reconstructed
 
 
 def count_compressed_parameters(algorithm: str, result: dict[str, Any]) -> int:
-    if algorithm == "cp":
-        return int(np.prod(result["weights"].shape)) + count_parameters(result["factors"])
+    norm_algo = algorithm.lower().replace("+", "_")
+    base_algo = norm_algo.replace("_puzzle", "")
 
-    if algorithm in {"tucker", "hosvd"}:
-        return int(np.prod(result["core"].shape)) + count_parameters(result["factors"])
-
-    if algorithm == "tensor_train":
-        return count_parameters(result["cores"])
-
-    if algorithm == "svd":
-        return int(np.prod(result["u"].shape)) + int(np.prod(result["singular_values"].shape)) + int(np.prod(result["vh"].shape))
-
-    if algorithm == "eigendecomposition":
+    if base_algo == "cp":
+        count = int(np.prod(result["weights"].shape)) + count_parameters(result["factors"])
+    elif base_algo in {"tucker", "hosvd"}:
+        count = int(np.prod(result["core"].shape)) + count_parameters(result["factors"])
+    elif base_algo == "tensor_train":
+        count = count_parameters(result["cores"])
+    elif base_algo == "svd":
+        count = int(np.prod(result["u"].shape)) + int(np.prod(result["singular_values"].shape)) + int(np.prod(result["vh"].shape))
+    elif base_algo == "eigendecomposition":
         q = result.get("q", result.get("eigenvectors"))
-        return int(np.prod(q.shape)) + int(np.prod(result["eigenvalues"].shape))
+        count = int(np.prod(q.shape)) + int(np.prod(result["eigenvalues"].shape))
+    elif base_algo == "qr":
+        count = int(np.prod(result["q"].shape)) + int(np.prod(result["r"].shape))
+    elif base_algo == "lu":
+        count = int(np.prod(result["l"].shape)) + int(np.prod(result["u"].shape))
+    else:
+        raise ValueError(f"Unsupported algorithm while counting compressed parameters: {algorithm}")
 
-    if algorithm == "qr":
-        return int(np.prod(result["q"].shape)) + int(np.prod(result["r"].shape))
+    if result.get("is_puzzle") or "shifts" in result or norm_algo.endswith("_puzzle"):
+        shifts = result.get("shifts", [])
+        count += len(shifts)
 
-    if algorithm == "lu":
-        return int(np.prod(result["l"].shape)) + int(np.prod(result["u"].shape))
-
-    raise ValueError(f"Unsupported algorithm while counting compressed parameters: {algorithm}")
+    return count

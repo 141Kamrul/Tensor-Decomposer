@@ -14,12 +14,17 @@ from .services.algorithms import SUPPORTED_ALGORITHMS
 
 
 TENSOR_METHODS = ("cp", "tucker", "hosvd", "tensor_train")
+PUZZLE_METHODS = ("cp_puzzle", "tucker_puzzle", "hosvd_puzzle", "tensor_train_puzzle")
 REFERENCE_METHODS = ("svd", "eigendecomposition", "qr", "lu")
 ALGORITHM_LABELS = {
     "cp": "CP Decomposition",
+    "cp_puzzle": "CP + PuzzleTensor",
     "tucker": "Tucker Decomposition",
+    "tucker_puzzle": "Tucker + PuzzleTensor",
     "hosvd": "Higher Order Singular Value Decomposition",
+    "hosvd_puzzle": "HOSVD + PuzzleTensor",
     "tensor_train": "Tensor Train Decomposition",
+    "tensor_train_puzzle": "Tensor Train + PuzzleTensor",
     "svd": "SVD",
     "eigendecomposition": "Eigendecomposition",
     "qr": "QR Decomposition",
@@ -55,6 +60,7 @@ def _build_base_context(tensor: object | None, algorithm: str, action: str) -> d
         "algorithm_options": SUPPORTED_ALGORITHMS,
         "algorithm_labels": ALGORITHM_LABELS,
         "tensor_methods": TENSOR_METHODS,
+        "puzzle_methods": PUZZLE_METHODS,
         "reference_methods": REFERENCE_METHODS,
         "cache_buster": str(int(time.time())),
     }
@@ -92,7 +98,8 @@ def home(request: HttpRequest) -> HttpResponse:
                 return render(request, "home.html", context)
 
             if action == "compare":
-                comparison = compare_methods(tensor, TENSOR_METHODS)
+                methods_to_compare = TENSOR_METHODS + PUZZLE_METHODS if tensor.ndim >= 2 else REFERENCE_METHODS
+                comparison = compare_methods(tensor, methods_to_compare)
                 export_path = export_result({"tensor": tensor_data, "comparison": comparison}, output_dir=Path("results"))
                 context = _build_base_context(tensor_data, algorithm, action)
                 context.update(

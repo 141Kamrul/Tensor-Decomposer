@@ -349,6 +349,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 try {
                     const parsed = JSON.parse(comparisonPre.textContent);
                     comparisonPre.textContent = formatSimpleJSON(parsed);
+                    if (!panelComparison.classList.contains("hidden") && Array.isArray(parsed)) {
+                        renderComparisonCharts(parsed);
+                    }
                 } catch (e) {
                     // Error
                 }

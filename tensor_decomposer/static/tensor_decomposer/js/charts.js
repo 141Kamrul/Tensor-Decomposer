@@ -207,10 +207,11 @@ export function createEquationSVG(algorithm, result, inputTensor) {
     svg.style.display = "block";
     svg.style.margin = "0 auto";
 
+    const baseAlgo = (algorithm || "").toLowerCase().replace("_puzzle", "").replace("+puzzle", "");
     const shape = getTensorShape(inputTensor);
 
     // Dynamic handling for Tensor Train across any number of dimensions (2D, 3D, 4D, etc.)
-    if (algorithm === "tensor_train" && result.cores && Array.isArray(result.cores) && result.cores.length > 0) {
+    if (baseAlgo === "tensor_train" && result.cores && Array.isArray(result.cores) && result.cores.length > 0) {
         const cores = result.cores;
         const numCores = cores.length;
 
@@ -292,12 +293,12 @@ export function createEquationSVG(algorithm, result, inputTensor) {
         let r1 = n1, r2 = n2, r3 = n3;
         let R = 1;
         
-        if (algorithm === "cp") {
+        if (baseAlgo === "cp") {
             if (result.factors && result.factors[0]) {
                 R = result.factors[0][0].length || result.factors[0].length;
             }
             r1 = R; r2 = R; r3 = R;
-        } else if (algorithm === "tucker" || algorithm === "hosvd") {
+        } else if (baseAlgo === "tucker" || baseAlgo === "hosvd") {
             if (result.core) {
                 const coreShape = getTensorShape(result.core);
                 r1 = coreShape[0] || r1;
@@ -319,7 +320,7 @@ export function createEquationSVG(algorithm, result, inputTensor) {
         const x_c = 550, y_c = 180;
         const H_g = s(r1), W_g = s(r2), D_g = s(r3);
         
-        const coreLabel = algorithm === "cp" ? "λ" : "G";
+        const coreLabel = baseAlgo === "cp" ? "λ" : "G";
         const coreGroup = createIsometricBlock(svgns, x_c, y_c, H_g, W_g, D_g, "#8b5cf6", coreLabel, { h: r1, w: r2, d: r3 });
         svg.appendChild(coreGroup);
 
@@ -385,11 +386,11 @@ export function createEquationSVG(algorithm, result, inputTensor) {
         xGroup.appendChild(drawTextLabel(svgns, x0_x + W_x/2, y0_x + H_x + 15, n2, "10"));
         svg.appendChild(xGroup);
 
-        const isExact = (algorithm === "qr" || algorithm === "lu" || algorithm === "eigendecomposition");
+        const isExact = (baseAlgo === "qr" || baseAlgo === "lu" || baseAlgo === "eigendecomposition");
         svg.appendChild(drawTextLabel(svgns, 260, 180, isExact ? "=" : "≈", "28", "bold"));
 
         let curX = 320;
-        if (algorithm === "svd") {
+        if (baseAlgo === "svd") {
             const H_u = s(n1), W_u = s(r);
             const y0_u = 175 - H_u / 2;
             const uGroup = createFlat2DBlock(svgns, curX, y0_u, W_u, H_u, "#ec4899", "U", n1, r);
@@ -408,7 +409,7 @@ export function createEquationSVG(algorithm, result, inputTensor) {
             const y0_v = 175 - H_v / 2;
             const vGroup = createFlat2DBlock(svgns, curX, y0_v, W_v, H_v, "#ec4899", "Vᵀ", r, n2);
             svg.appendChild(vGroup);
-        } else if (algorithm === "cp") {
+        } else if (baseAlgo === "cp") {
             const H_a1 = s(n1), W_a1 = s(r);
             const y0_a1 = 175 - H_a1 / 2;
             const a1Group = createFlat2DBlock(svgns, curX, y0_a1, W_a1, H_a1, "#ec4899", "A(1)", n1, r);
@@ -427,7 +428,7 @@ export function createEquationSVG(algorithm, result, inputTensor) {
             const y0_a2 = 175 - H_a2 / 2;
             const a2Group = createFlat2DBlock(svgns, curX, y0_a2, W_a2, H_a2, "#ec4899", "A(2)ᵀ", r, n2);
             svg.appendChild(a2Group);
-        } else if (algorithm === "tucker" || algorithm === "hosvd") {
+        } else if (baseAlgo === "tucker" || baseAlgo === "hosvd") {
             let r1 = r, r2 = r;
             if (result.ranks && result.ranks.length >= 2) {
                 r1 = result.ranks[0];
@@ -455,7 +456,7 @@ export function createEquationSVG(algorithm, result, inputTensor) {
             const y0_a2 = 175 - H_a2 / 2;
             const a2Group = createFlat2DBlock(svgns, curX, y0_a2, W_a2, H_a2, "#ec4899", "A(2)ᵀ", r2, n2);
             svg.appendChild(a2Group);
-        } else if (algorithm === "tensor_train") {
+        } else if (baseAlgo === "tensor_train") {
             let r1 = r;
             if (result.ranks && result.ranks.length > 1) {
                 r1 = result.ranks[1];
@@ -473,7 +474,7 @@ export function createEquationSVG(algorithm, result, inputTensor) {
             const y0_c2 = 175 - H_c2 / 2;
             const c2Group = createFlat2DBlock(svgns, curX, y0_c2, W_c2, H_c2, "#8b5cf6", "Core 2", r1, n2);
             svg.appendChild(c2Group);
-        } else if (algorithm === "eigendecomposition") {
+        } else if (baseAlgo === "eigendecomposition") {
             const H_q = s(n1), W_q = s(r);
             const y0_q = 175 - H_q / 2;
             const qGroup = createFlat2DBlock(svgns, curX, y0_q, W_q, H_q, "#ec4899", "Q", n1, r);
@@ -492,7 +493,7 @@ export function createEquationSVG(algorithm, result, inputTensor) {
             const y0_qi = 175 - H_qi / 2;
             const qiGroup = createFlat2DBlock(svgns, curX, y0_qi, W_qi, H_qi, "#ec4899", "Q⁻¹", r, n1);
             svg.appendChild(qiGroup);
-        } else if (algorithm === "qr") {
+        } else if (baseAlgo === "qr") {
             const H_q = s(n1), W_q = s(n1);
             const y0_q = 175 - H_q / 2;
             const qGroup = createFlat2DBlock(svgns, curX, y0_q, W_q, H_q, "#ec4899", "Q", n1, n1);
@@ -504,7 +505,7 @@ export function createEquationSVG(algorithm, result, inputTensor) {
             const y0_r = 175 - H_r / 2;
             const rGroup = createFlat2DBlock(svgns, curX, y0_r, W_r, H_r, "#8b5cf6", "R", n1, n2);
             svg.appendChild(rGroup);
-        } else if (algorithm === "lu") {
+        } else if (baseAlgo === "lu") {
             const H_l = s(n1), W_l = s(n1);
             const y0_l = 175 - H_l / 2;
             const lGroup = createFlat2DBlock(svgns, curX, y0_l, W_l, H_l, "#ec4899", "L", n1, n1);
@@ -523,6 +524,7 @@ export function createEquationSVG(algorithm, result, inputTensor) {
 }
 
 export function getVisualizationItems(algorithm, result, inputTensor) {
+    const baseAlgo = (algorithm || "").toLowerCase().replace("_puzzle", "").replace("+puzzle", "");
     const items = [];
     
     // 1. Input Tensor
@@ -565,7 +567,7 @@ export function getVisualizationItems(algorithm, result, inputTensor) {
         if (result.singular_values.length > 0 && Array.isArray(result.singular_values[0])) {
             result.singular_values.forEach((modeVals, idx) => {
                 if (Array.isArray(modeVals) && modeVals.length > 0) {
-                    const prefix = algorithm === "tensor_train" ? `Cut ${idx + 1}` : `Mode ${idx + 1}`;
+                    const prefix = baseAlgo === "tensor_train" ? `Cut ${idx + 1}` : `Mode ${idx + 1}`;
                     items.push({
                         label: `Singular Value Spectrum (${prefix})`,
                         data: modeVals,
@@ -801,74 +803,196 @@ export function createBarChartSVG(data) {
     return svg;
 }
 
-export function createComparisonBarChart(labels, values, color) {
+export function createComparisonBarChart(labels, values, color, type = "default") {
     const svgns = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(svgns, "svg");
-    svg.setAttribute("viewBox", "0 0 400 200");
-    svg.setAttribute("class", "visual-svg");
 
-    const margin = { top: 20, right: 20, bottom: 40, left: 45 };
-    const width = 400 - margin.left - margin.right;
-    const height = 200 - margin.top - margin.bottom;
+    const numItems = Math.max(1, values.length);
+    const minSlotWidth = 115;
+    const margin = { top: 38, right: 35, bottom: 85, left: 65 };
+    const width = Math.max(900, numItems * minSlotWidth);
+    const height = 180;
+    const totalWidth = width + margin.left + margin.right;
+    const totalHeight = height + margin.top + margin.bottom;
 
-    const maxVal = Math.max(...values) || 1;
-    const barWidth = width / values.length;
+    svg.setAttribute("viewBox", `0 0 ${totalWidth} ${totalHeight}`);
+    svg.setAttribute("class", "visual-svg comparison-svg");
+    svg.style.width = "100%";
+    svg.style.height = "auto";
+    svg.style.display = "block";
 
-    // Grid lines
-    for (let i = 0; i <= 4; i++) {
-        const y = margin.top + (height / 4) * i;
+    function formatMethodName(raw) {
+        if (!raw) return "";
+        const str = String(raw).trim();
+        const clean = str.toLowerCase().replace("+", "_");
+        const map = {
+            "cp": "CP Decomposition",
+            "tucker": "Tucker Decomposition",
+            "hosvd": "HOSVD",
+            "tensor_train": "Tensor Train (TT)",
+            "cp_puzzle": "CP + PuzzleTensor",
+            "tucker_puzzle": "Tucker + PuzzleTensor",
+            "hosvd_puzzle": "HOSVD + PuzzleTensor",
+            "tensor_train_puzzle": "TT + PuzzleTensor",
+            "svd": "SVD",
+            "eigendecomposition": "Eigendecomposition",
+            "qr": "QR Decomposition",
+            "lu": "LU Decomposition",
+        };
+        return map[clean] || str.toUpperCase().replace(/_/g, " ");
+    }
+
+    function formatBarValue(val) {
+        if (typeof val !== "number" || isNaN(val)) return String(val ?? "");
+        if (type === "ratio") {
+            return `${val.toFixed(2)}x`;
+        }
+        if (type === "time") {
+            return `${val.toFixed(2)} ms`;
+        }
+        if (type === "error") {
+            if (val === 0) return "0";
+            if (val < 1e-4) return val.toExponential(2);
+            return val.toFixed(4);
+        }
+        if (val >= 100) return val.toFixed(1);
+        if (val < 0.001 && val > 0) return val.toExponential(2);
+        return val.toFixed(3);
+    }
+
+    function formatTick(val) {
+        if (val === 0) return "0";
+        if (type === "ratio") return `${val.toFixed(1)}x`;
+        if (type === "time") return `${val.toFixed(0)}ms`;
+        if (val < 0.01) return val.toExponential(1);
+        if (val >= 100) return val.toFixed(0);
+        return val.toFixed(2);
+    }
+
+    const maxVal = Math.max(...values, 0) || 1;
+    const slotWidth = width / numItems;
+    const barWidth = Math.min(52, Math.max(26, slotWidth * 0.42));
+
+    // Gradient definition for rich aesthetic bars
+    const defs = document.createElementNS(svgns, "defs");
+    const gradId = `comp-grad-${Math.random().toString(36).substring(2, 9)}`;
+    const grad = document.createElementNS(svgns, "linearGradient");
+    grad.setAttribute("id", gradId);
+    grad.setAttribute("x1", "0%");
+    grad.setAttribute("y1", "0%");
+    grad.setAttribute("x2", "0%");
+    grad.setAttribute("y2", "100%");
+
+    const stop1 = document.createElementNS(svgns, "stop");
+    stop1.setAttribute("offset", "0%");
+    stop1.setAttribute("stop-color", color);
+    stop1.setAttribute("stop-opacity", "0.95");
+    grad.appendChild(stop1);
+
+    const stop2 = document.createElementNS(svgns, "stop");
+    stop2.setAttribute("offset", "100%");
+    stop2.setAttribute("stop-color", color);
+    stop2.setAttribute("stop-opacity", "0.65");
+    grad.appendChild(stop2);
+    defs.appendChild(grad);
+    svg.appendChild(defs);
+
+    // Subtle background grid lines and Y-axis scale labels
+    const numTicks = 4;
+    for (let i = 0; i <= numTicks; i++) {
+        const y = margin.top + (height / numTicks) * i;
         const line = document.createElementNS(svgns, "line");
         line.setAttribute("x1", margin.left);
         line.setAttribute("y1", y);
         line.setAttribute("x2", margin.left + width);
         line.setAttribute("y2", y);
-        line.setAttribute("stroke", "var(--panel-border)");
-        line.setAttribute("stroke-dasharray", "4");
+        line.setAttribute("stroke", "var(--panel-border, rgba(255, 255, 255, 0.1))");
+        line.setAttribute("stroke-dasharray", "4,4");
+        line.setAttribute("opacity", "0.7");
         svg.appendChild(line);
 
-        // Labels
+        const tickVal = (maxVal * (numTicks - i)) / numTicks;
         const text = document.createElementNS(svgns, "text");
-        text.setAttribute("x", margin.left - 8);
+        text.setAttribute("x", margin.left - 10);
         text.setAttribute("y", y + 4);
         text.setAttribute("text-anchor", "end");
-        text.setAttribute("fill", "var(--text-muted)");
-        text.setAttribute("font-size", "10");
+        text.setAttribute("fill", "var(--text-muted, #94a3b8)");
+        text.setAttribute("font-size", "11");
         text.setAttribute("font-family", "monospace");
-        text.textContent = ((maxVal * (4 - i)) / 4).toFixed(3);
+        text.textContent = formatTick(tickVal);
         svg.appendChild(text);
     }
 
-    // Draw bars
-    values.forEach((val, i) => {
-        const h = (val / maxVal) * height;
-        const x = margin.left + i * barWidth + 8;
-        const y = margin.top + height - h;
-        const w = Math.max(1, barWidth - 16);
+    // Baseline horizontal axis line
+    const baseLine = document.createElementNS(svgns, "line");
+    baseLine.setAttribute("x1", margin.left);
+    baseLine.setAttribute("y1", margin.top + height);
+    baseLine.setAttribute("x2", margin.left + width);
+    baseLine.setAttribute("y2", margin.top + height);
+    baseLine.setAttribute("stroke", "var(--card-border, rgba(255, 255, 255, 0.2))");
+    baseLine.setAttribute("stroke-width", "1.5");
+    svg.appendChild(baseLine);
 
+    // Draw bars, top values, and angled X-axis labels
+    values.forEach((val, i) => {
+        const normVal = Math.max(0, val);
+        const rawH = (normVal / maxVal) * height;
+        const h = Math.max(normVal > 0 ? 3 : 1, rawH);
+        const x = margin.left + i * slotWidth + (slotWidth - barWidth) / 2;
+        const y = margin.top + height - h;
+
+        // Bar rectangle
         const rect = document.createElementNS(svgns, "rect");
         rect.setAttribute("x", x);
         rect.setAttribute("y", y);
-        rect.setAttribute("width", w);
+        rect.setAttribute("width", barWidth);
         rect.setAttribute("height", h);
-        rect.setAttribute("fill", color);
+        rect.setAttribute("fill", `url(#${gradId})`);
         rect.setAttribute("rx", "4");
+        rect.style.transition = "opacity 0.2s, transform 0.2s";
+        rect.style.cursor = "pointer";
 
-        // Add simple tooltip value
+        const formattedMethod = formatMethodName(labels[i]);
+        const valStr = formatBarValue(val);
+
+        // Tooltip
         const title = document.createElementNS(svgns, "title");
-        title.textContent = `${labels[i]}: ${val}`;
+        title.textContent = `${formattedMethod}: ${valStr}`;
         rect.appendChild(title);
         svg.appendChild(rect);
 
-        // Label text below bar
+        // Value text placed right above bar
+        const valText = document.createElementNS(svgns, "text");
+        valText.setAttribute("x", x + barWidth / 2);
+        valText.setAttribute("y", Math.max(margin.top - 8, y - 6));
+        valText.setAttribute("text-anchor", "middle");
+        valText.setAttribute("fill", "var(--text-secondary, #cbd5e1)");
+        valText.setAttribute("font-size", "11");
+        valText.setAttribute("font-family", "monospace");
+        valText.setAttribute("font-weight", "600");
+        valText.textContent = valStr;
+        svg.appendChild(valText);
+
+        // Angled X-axis label with generous space
+        const labelGroup = document.createElementNS(svgns, "g");
+        const labelAnchorX = x + barWidth / 2;
+        const labelAnchorY = margin.top + height + 16;
+        labelGroup.setAttribute(
+            "transform",
+            `translate(${labelAnchorX}, ${labelAnchorY}) rotate(-28)`
+        );
+
         const labelText = document.createElementNS(svgns, "text");
-        labelText.setAttribute("x", x + w/2);
-        labelText.setAttribute("y", margin.top + height + 16);
-        labelText.setAttribute("text-anchor", "middle");
-        labelText.setAttribute("fill", "var(--text-primary)");
-        labelText.setAttribute("font-size", "9");
-        labelText.setAttribute("font-weight", "bold");
-        labelText.textContent = labels[i];
-        svg.appendChild(labelText);
+        labelText.setAttribute("x", 0);
+        labelText.setAttribute("y", 0);
+        labelText.setAttribute("text-anchor", "end");
+        labelText.setAttribute("fill", "var(--text-primary, #f8fafc)");
+        labelText.setAttribute("font-size", "11");
+        labelText.setAttribute("font-weight", "600");
+        labelText.setAttribute("letter-spacing", "0.2px");
+        labelText.textContent = formattedMethod;
+        labelGroup.appendChild(labelText);
+        svg.appendChild(labelGroup);
     });
 
     return svg;

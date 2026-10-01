@@ -14,9 +14,11 @@ def estimate_flops(shape: tuple[int, ...], algorithm: str, last_result: dict[str
         M, N = max(m, n), min(m, n)
         return int(4 * (M**2) * N + 8 * M * (N**2) + 9 * (N**3))
 
+    base_algo = algorithm.lower().replace("+", "_").replace("_puzzle", "")
+
     if len(shape) >= 3:
         n1, n2, n3 = shape[0], shape[1], shape[2]
-        if algorithm == "tensor_train":
+        if base_algo == "tensor_train":
             r1, r2 = 1, 1
             if last_result and "cores" in last_result:
                 try:
@@ -26,7 +28,7 @@ def estimate_flops(shape: tuple[int, ...], algorithm: str, last_result: dict[str
                 except Exception:
                     pass
             return svd_flops(n1, n2 * n3) + svd_flops(r1 * n2, n3)
-        elif algorithm in ("tucker", "hosvd"):
+        elif base_algo in ("tucker", "hosvd"):
             r1, r2, r3 = n1, n2, n3
             if last_result and "core" in last_result:
                 try:
@@ -40,7 +42,7 @@ def estimate_flops(shape: tuple[int, ...], algorithm: str, last_result: dict[str
                 svd_flops(n3, n1 * n2) +
                 2 * n1 * n2 * n3 * (r1 + r2 + r3)
             )
-        elif algorithm == "cp":
+        elif base_algo == "cp":
             R = 5
             if last_result and "factors" in last_result:
                 try:
@@ -53,38 +55,41 @@ def estimate_flops(shape: tuple[int, ...], algorithm: str, last_result: dict[str
         m = shape[0]
         n = shape[1] if len(shape) > 1 else 1
         
-        if algorithm == "svd":
+        if base_algo == "svd":
             return svd_flops(m, n)
-        elif algorithm == "qr":
+        elif base_algo == "qr":
             M, N = max(m, n), min(m, n)
             return int(2 * (N**2) * (M - N/3.0))
-        elif algorithm == "lu":
+        elif base_algo == "lu":
             M, N = max(m, n), min(m, n)
             return int(2/3.0 * (N**3) + (N**2) * (M - N))
-        elif algorithm == "eigendecomposition":
+        elif base_algo == "eigendecomposition":
             return int(9 * (m**3))
             
     return int(m * n)
 
 
 def get_complexity_formula(shape: tuple[int, ...], algorithm: str) -> str:
+    base_algo = algorithm.lower().replace("+", "_").replace("_puzzle", "")
+    suffix = " + Puzzle" if "_puzzle" in algorithm.lower() or "+puzzle" in algorithm.lower() else ""
+
     if len(shape) >= 3:
-        if algorithm == "tensor_train":
-            return "O(N₁N₂N₃R)"
-        elif algorithm in ("tucker", "hosvd"):
-            return "O(N₁N₂N₃(∑R_i) + ∑SVD_i)"
-        elif algorithm == "cp":
-            return "O(N₁N₂N₃R • Iterations)"
+        if base_algo == "tensor_train":
+            return f"O(N₁N₂N₃R){suffix}"
+        elif base_algo in ("tucker", "hosvd"):
+            return f"O(N₁N₂N₃(∑R_i) + ∑SVD_i){suffix}"
+        elif base_algo == "cp":
+            return f"O(N₁N₂N₃R • Iterations){suffix}"
     else:
-        if algorithm == "svd":
+        if base_algo == "svd":
             return "O(4M²N + 8MN² + 9N³)"
-        elif algorithm == "qr":
+        elif base_algo == "qr":
             return "O(2N²(M - N/3))"
-        elif algorithm == "lu":
+        elif base_algo == "lu":
             return "O(2/3 N³ + N²(M-N))"
-        elif algorithm == "eigendecomposition":
+        elif base_algo == "eigendecomposition":
             return "O(9 N³)"
-    return "O(N)"
+    return f"O(N){suffix}"
 
 
 def benchmark_algorithm(array: np.ndarray, algorithm: str, repeats: int = 1) -> dict[str, Any]:

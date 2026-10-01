@@ -673,6 +673,19 @@ tr:hover td {
     grid-template-columns: 1fr;
 }
 
+.visual-grid.comparison-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+    width: 100%;
+}
+
+.visual-grid.comparison-grid .visual-card {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 1.5rem;
+}
+
 .visual-card {
     background: var(--card-bg);
     border: 1px solid var(--card-border);
@@ -691,6 +704,15 @@ tr:hover td {
     width: 100%;
     height: auto;
     aspect-ratio: 2 / 1;
+}
+
+.visual-svg.comparison-svg {
+    width: 100%;
+    height: auto;
+    aspect-ratio: auto;
+    min-height: 250px;
+    display: block;
+    overflow: visible;
 }
 
 .visual-svg.heatmap {

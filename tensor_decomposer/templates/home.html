@@ -141,6 +141,12 @@
                                     <option value="hosvd" {% if algorithm == 'hosvd' %}selected{% endif %}>HOSVD</option>
                                     <option value="tensor_train" {% if algorithm == 'tensor_train' %}selected{% endif %}>Tensor Train (TT)</option>
                                 </optgroup>
+                                <optgroup label="PuzzleTensor Augmented Methods (Paper: KDD 2025)">
+                                    <option value="cp_puzzle" {% if algorithm == 'cp_puzzle' or algorithm == 'cp+puzzle' %}selected{% endif %}>CP + PuzzleTensor</option>
+                                    <option value="tucker_puzzle" {% if algorithm == 'tucker_puzzle' or algorithm == 'tucker+puzzle' %}selected{% endif %}>Tucker + PuzzleTensor</option>
+                                    <option value="hosvd_puzzle" {% if algorithm == 'hosvd_puzzle' or algorithm == 'hosvd+puzzle' %}selected{% endif %}>HOSVD + PuzzleTensor</option>
+                                    <option value="tensor_train_puzzle" {% if algorithm == 'tensor_train_puzzle' or algorithm == 'tensor_train+puzzle' %}selected{% endif %}>Tensor Train + PuzzleTensor</option>
+                                </optgroup>
                                 <optgroup label="Matrix reference methods">
                                     <option value="svd" {% if algorithm == 'svd' %}selected{% endif %}>SVD</option>
                                     <option value="eigendecomposition" {% if algorithm == 'eigendecomposition' %}selected{% endif %}>Eigendecomposition</option>
