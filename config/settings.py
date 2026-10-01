@@ -10,22 +10,22 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
+# Ensure results directory exists locally
+(BASE_DIR / 'results').mkdir(parents=True, exist_ok=True)
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-p=()y3qm50!t@tr57lj=+ep=6p%9$tqxe&e7200)-uh=--u+6%'
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-p=()y3qm50!t@tr57lj=+ep=6p%9$tqxe&e7200)-uh=--u+6%')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() in ('true', '1', 'yes')
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [h.strip() for h in os.environ.get('DJANGO_ALLOWED_HOSTS', '*').split(',') if h.strip()]
 
 
 # Application definition
@@ -79,8 +79,6 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
-import os
 
 DATABASES = {
     'default': {

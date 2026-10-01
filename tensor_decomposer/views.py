@@ -156,16 +156,17 @@ def home(request: HttpRequest) -> HttpResponse:
 
 def download_result(request: HttpRequest, filename: str) -> HttpResponse:
     import os
-    if os.environ.get("VERCEL"):
-        file_path = Path("/tmp/results") / filename
-    else:
-        file_path = Path("results") / filename
+    from django.conf import settings
 
-    if not file_path.exists():
-        file_path = Path("results") / filename
+    safe_filename = Path(filename).name
+    if os.environ.get("VERCEL"):
+        file_path = Path("/tmp/results") / safe_filename
+    else:
+        file_path = Path(settings.BASE_DIR) / "results" / safe_filename
+
     if not file_path.exists():
         return HttpResponse("File not found", status=404)
     response = HttpResponse(file_path.read_text(encoding="utf-8"), content_type="application/json")
-    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    response["Content-Disposition"] = f'attachment; filename="{safe_filename}"'
     return response
 

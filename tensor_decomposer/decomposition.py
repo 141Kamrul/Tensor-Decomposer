@@ -115,12 +115,19 @@ def run_decomposition(array: np.ndarray, algorithm: str, **kwargs: Any) -> dict[
 def export_result(result: dict[str, Any], filename: str = "decomposition_result.json", output_dir: str | Path | None = None) -> Path:
     if os.environ.get("VERCEL"):
         target_dir = Path("/tmp/results")
+    elif output_dir is not None:
+        target_dir = Path(output_dir)
     else:
-        target_dir = Path(output_dir or "results")
+        try:
+            from django.conf import settings
+            target_dir = Path(settings.BASE_DIR) / "results"
+        except Exception:
+            target_dir = Path(__file__).resolve().parent.parent / "results"
 
     target_dir.mkdir(parents=True, exist_ok=True)
 
-    export_path = target_dir / filename
+    safe_filename = Path(filename).name
+    export_path = target_dir / safe_filename
     export_path.write_text(json.dumps(result, default=_json_default), encoding="utf-8")
     return export_path
 
