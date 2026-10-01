@@ -12,6 +12,16 @@ class DecompositionTests(SimpleTestCase):
         self.assertEqual(array.shape, (2, 2))
         np.testing.assert_array_equal(array, np.array([[1, 2], [3, 4]]))
 
+    def test_parse_4mode_tensor_with_header(self):
+        raw = "3\n2\n4\n1\n[[[[1], [2], [3], [4]], [[5], [6], [7], [8]]], [[[9], [10], [11], [12]], [[13], [14], [15], [16]]], [[[17], [18], [19], [20]], [[21], [22], [23], [24]]]]"
+        array = parse_tensor_input(raw)
+        self.assertEqual(array.shape, (3, 2, 4, 1))
+
+    def test_parse_tensor_with_trailing_commas(self):
+        raw = "[[[[1, 2], [3, 4],],],]"
+        array = parse_tensor_input(raw)
+        self.assertEqual(array.shape, (1, 1, 2, 2))
+
     def test_run_svd_decomposition(self):
         array = np.array([[1.0, 2.0], [3.0, 4.0]])
         result = run_decomposition(array, "svd")

@@ -208,6 +208,84 @@ export function createEquationSVG(algorithm, result, inputTensor) {
     svg.style.margin = "0 auto";
 
     const shape = getTensorShape(inputTensor);
+
+    // Dynamic handling for Tensor Train across any number of dimensions (2D, 3D, 4D, etc.)
+    if (algorithm === "tensor_train" && result.cores && Array.isArray(result.cores) && result.cores.length > 0) {
+        const cores = result.cores;
+        const numCores = cores.length;
+
+        // Collect all dimension sizes and TT ranks to establish global proportional scale
+        const allDims = [...shape];
+        if (result.ranks) allDims.push(...result.ranks);
+        cores.forEach(c => {
+            const cs = getTensorShape(c);
+            allDims.push(...cs);
+        });
+        const maxDim = Math.max(...allDims.filter(v => typeof v === 'number' && !isNaN(v)), 1);
+        const s = (val) => Math.max(14, Math.min(80, (val / maxDim) * 85));
+
+        // Draw input tensor X on the left
+        const H_x = s(shape[0] || 1);
+        const W_x = s(shape[1] || 1);
+        const D_x = shape.length >= 3 ? s(shape[2] || 1) : 0;
+        const x0_x = 130, y0_x = 175;
+        const inputGroup = createIsometricBlock(
+            svgns, x0_x, y0_x, H_x, W_x, D_x, "#06b6d4", "X", 
+            { h: shape[0], w: shape[1], d: shape.length >= 3 ? shape.slice(2).join("×") : "" }
+        );
+        svg.appendChild(inputGroup);
+
+        // Shape label under X
+        svg.appendChild(drawTextLabel(svgns, x0_x, 265, `Shape: ${shape.join("×")}`, "10"));
+
+        // Equals / Approx sign
+        svg.appendChild(drawTextLabel(svgns, 230, 175, "≈", "28", "bold"));
+
+        // Dynamically space cores across canvas width 260 -> 780
+        const startX = 260;
+        const endX = 780;
+        const slotWidth = (endX - startX) / numCores;
+
+        cores.forEach((core, idx) => {
+            const cShape = getTensorShape(core);
+            const rPrev = cShape[0] || 1;
+            const nK = cShape[1] || shape[idx] || 1;
+            const rNext = cShape[2] || 1;
+
+            const cx = startX + (idx + 0.5) * slotWidth;
+            const cy = 175;
+
+            let h = s(nK), w = s(rNext), d = s(rPrev);
+            if (idx === 0) {
+                h = s(nK);
+                w = s(rNext);
+                d = 0;
+            } else if (idx === numCores - 1) {
+                h = s(rPrev);
+                w = 0;
+                d = s(nK);
+            }
+
+            const color = idx % 2 === 0 ? "#ec4899" : "#8b5cf6";
+            const coreGroup = createIsometricBlock(
+                svgns, cx, cy, h, w, d, color, `Core ${idx + 1}`,
+                { h: nK, w: rNext > 1 ? rNext : "", d: rPrev > 1 ? rPrev : "" }
+            );
+            svg.appendChild(coreGroup);
+
+            // Dimension label under each core
+            const dimLabel = `${rPrev}×${nK}×${rNext}`;
+            svg.appendChild(drawTextLabel(svgns, cx, 265, dimLabel, "10"));
+
+            // Contraction dot between cores
+            if (idx < numCores - 1) {
+                const dotX = startX + (idx + 1) * slotWidth;
+                svg.appendChild(drawTextLabel(svgns, dotX, 175, "•", "22", "bold"));
+            }
+        });
+
+        return svg;
+    }
     
     if (shape.length >= 3) {
         const n1 = shape[0], n2 = shape[1], n3 = shape[2];
@@ -226,13 +304,6 @@ export function createEquationSVG(algorithm, result, inputTensor) {
                 r2 = coreShape[1] || r2;
                 r3 = coreShape[2] || r3;
             }
-        } else if (algorithm === "tensor_train") {
-            if (result.cores) {
-                const c1Shape = getTensorShape(result.cores[0]);
-                const c2Shape = getTensorShape(result.cores[1]);
-                r1 = c1Shape[2] || r1;
-                r2 = c2Shape[2] || r2;
-            }
         }
 
         const maxDim = Math.max(n1, n2, n3, r1, r2, r3);
@@ -248,49 +319,43 @@ export function createEquationSVG(algorithm, result, inputTensor) {
         const x_c = 550, y_c = 180;
         const H_g = s(r1), W_g = s(r2), D_g = s(r3);
         
-        if (algorithm === "tensor_train") {
-            const c1Group = createIsometricBlock(svgns, 420, 180, s(n1), s(r1), 0, "#ec4899", "Core 1", { h: n1, w: r1 });
-            svg.appendChild(c1Group);
-            
-            svg.appendChild(drawTextLabel(svgns, 480, 180, "•", "24", "bold"));
+        const coreLabel = algorithm === "cp" ? "λ" : "G";
+        const coreGroup = createIsometricBlock(svgns, x_c, y_c, H_g, W_g, D_g, "#8b5cf6", coreLabel, { h: r1, w: r2, d: r3 });
+        svg.appendChild(coreGroup);
 
-            const c2Group = createIsometricBlock(svgns, 560, 180, s(r1), s(n2), s(r2), "#8b5cf6", "Core 2", { h: r1, w: n2, d: r2 });
-            svg.appendChild(c2Group);
-            
-            svg.appendChild(drawTextLabel(svgns, 650, 180, "•", "24", "bold"));
+        const H_a1 = s(n1), W_a1 = s(r1);
+        const x0_a1 = x_c - 0.866 * W_g - 40;
+        const y0_a1 = y_c + 0.5 * W_g - 20;
+        const a1Group = createIsometricBlock(svgns, x0_a1, y0_a1, H_a1, W_a1, 0, "#ec4899", "A(1)", { h: n1, w: r1 });
+        svg.appendChild(a1Group);
 
-            const c3Group = createIsometricBlock(svgns, 720, 180, s(r2), 0, s(n3), "#ec4899", "Core 3", { h: r2, d: n3 });
-            svg.appendChild(c3Group);
-        } else {
-            const coreLabel = algorithm === "cp" ? "λ" : "G";
-            const coreGroup = createIsometricBlock(svgns, x_c, y_c, H_g, W_g, D_g, "#8b5cf6", coreLabel, { h: r1, w: r2, d: r3 });
-            svg.appendChild(coreGroup);
+        const W_a2 = s(n2), D_a2 = s(r2);
+        const x0_a2 = x_c - 0.866 * W_g - 20;
+        const y0_a2 = y_c + 0.5 * W_g + 45;
+        const a2Group = createIsometricBlock(svgns, x0_a2, y0_a2, 0, W_a2, D_a2, "#ec4899", "A(2)", { w: n2, d: r2 });
+        svg.appendChild(a2Group);
 
-            const H_a1 = s(n1), W_a1 = s(r1);
-            const x0_a1 = x_c - 0.866 * W_g - 40;
-            const y0_a1 = y_c + 0.5 * W_g - 20;
-            const a1Group = createIsometricBlock(svgns, x0_a1, y0_a1, H_a1, W_a1, 0, "#ec4899", "A(1)", { h: n1, w: r1 });
-            svg.appendChild(a1Group);
-
-            const W_a2 = s(n2), D_a2 = s(r2);
-            const x0_a2 = x_c - 0.866 * W_g - 20;
-            const y0_a2 = y_c + 0.5 * W_g + 45;
-            const a2Group = createIsometricBlock(svgns, x0_a2, y0_a2, 0, W_a2, D_a2, "#ec4899", "A(2)", { w: n2, d: r2 });
-            svg.appendChild(a2Group);
-
-            const H_a3 = s(r3), D_a3 = s(n3);
-            const x0_a3 = x_c + 0.866 * D_g + 40;
-            const y0_a3 = y_c + 0.5 * D_g - 20;
-            const a3Group = createIsometricBlock(svgns, x0_a3, y0_a3, H_a3, 0, D_a3, "#ec4899", "A(3)", { h: r3, d: n3 });
-            svg.appendChild(a3Group);
-        }
+        const H_a3 = s(r3), D_a3 = s(n3);
+        const x0_a3 = x_c + 0.866 * D_g + 40;
+        const y0_a3 = y_c + 0.5 * D_g - 20;
+        const a3Group = createIsometricBlock(svgns, x0_a3, y0_a3, H_a3, 0, D_a3, "#ec4899", "A(3)", { h: r3, d: n3 });
+        svg.appendChild(a3Group);
     } else {
         const n1 = shape[0] || 1;
         const n2 = shape[1] || 1;
         let r = Math.min(n1, n2);
         
-        if (result.singular_values) r = result.singular_values.length;
+        if (result.singular_values) {
+            if (Array.isArray(result.singular_values[0])) {
+                r = result.singular_values[0].length;
+            } else {
+                r = result.singular_values.length;
+            }
+        }
         else if (result.eigenvalues) r = result.eigenvalues.length;
+        else if (result.weights) r = result.weights.length;
+        else if (result.ranks && Array.isArray(result.ranks)) r = result.ranks[0];
+        else if (result.rank) r = result.rank;
         else if (result.q) {
             const qShape = getTensorShape(result.q);
             r = qShape[1] || r;
@@ -343,6 +408,71 @@ export function createEquationSVG(algorithm, result, inputTensor) {
             const y0_v = 175 - H_v / 2;
             const vGroup = createFlat2DBlock(svgns, curX, y0_v, W_v, H_v, "#ec4899", "Vᵀ", r, n2);
             svg.appendChild(vGroup);
+        } else if (algorithm === "cp") {
+            const H_a1 = s(n1), W_a1 = s(r);
+            const y0_a1 = 175 - H_a1 / 2;
+            const a1Group = createFlat2DBlock(svgns, curX, y0_a1, W_a1, H_a1, "#ec4899", "A(1)", n1, r);
+            svg.appendChild(a1Group);
+            
+            curX += W_a1 + 15;
+            
+            const H_lam = s(r), W_lam = s(r);
+            const y0_lam = 175 - H_lam / 2;
+            const lamGroup = createFlat2DBlock(svgns, curX, y0_lam, W_lam, H_lam, "#8b5cf6", "λ", r, r, true);
+            svg.appendChild(lamGroup);
+            
+            curX += W_lam + 15;
+            
+            const H_a2 = s(r), W_a2 = s(n2);
+            const y0_a2 = 175 - H_a2 / 2;
+            const a2Group = createFlat2DBlock(svgns, curX, y0_a2, W_a2, H_a2, "#ec4899", "A(2)ᵀ", r, n2);
+            svg.appendChild(a2Group);
+        } else if (algorithm === "tucker" || algorithm === "hosvd") {
+            let r1 = r, r2 = r;
+            if (result.ranks && result.ranks.length >= 2) {
+                r1 = result.ranks[0];
+                r2 = result.ranks[1];
+            } else if (result.core) {
+                const cShape = getTensorShape(result.core);
+                r1 = cShape[0] || r1;
+                r2 = cShape[1] || r2;
+            }
+            const H_a1 = s(n1), W_a1 = s(r1);
+            const y0_a1 = 175 - H_a1 / 2;
+            const a1Group = createFlat2DBlock(svgns, curX, y0_a1, W_a1, H_a1, "#ec4899", "A(1)", n1, r1);
+            svg.appendChild(a1Group);
+            
+            curX += W_a1 + 15;
+            
+            const H_core = s(r1), W_core = s(r2);
+            const y0_core = 175 - H_core / 2;
+            const coreGroup = createFlat2DBlock(svgns, curX, y0_core, W_core, H_core, "#8b5cf6", "G", r1, r2);
+            svg.appendChild(coreGroup);
+            
+            curX += W_core + 15;
+            
+            const H_a2 = s(r2), W_a2 = s(n2);
+            const y0_a2 = 175 - H_a2 / 2;
+            const a2Group = createFlat2DBlock(svgns, curX, y0_a2, W_a2, H_a2, "#ec4899", "A(2)ᵀ", r2, n2);
+            svg.appendChild(a2Group);
+        } else if (algorithm === "tensor_train") {
+            let r1 = r;
+            if (result.ranks && result.ranks.length > 1) {
+                r1 = result.ranks[1];
+            }
+            const H_c1 = s(n1), W_c1 = s(r1);
+            const y0_c1 = 175 - H_c1 / 2;
+            const c1Group = createFlat2DBlock(svgns, curX, y0_c1, W_c1, H_c1, "#ec4899", "Core 1", n1, r1);
+            svg.appendChild(c1Group);
+            
+            curX += W_c1 + 15;
+            svg.appendChild(drawTextLabel(svgns, curX + 5, 180, "•", "22", "bold"));
+            curX += 25;
+            
+            const H_c2 = s(r1), W_c2 = s(n2);
+            const y0_c2 = 175 - H_c2 / 2;
+            const c2Group = createFlat2DBlock(svgns, curX, y0_c2, W_c2, H_c2, "#8b5cf6", "Core 2", r1, n2);
+            svg.appendChild(c2Group);
         } else if (algorithm === "eigendecomposition") {
             const H_q = s(n1), W_q = s(r);
             const y0_q = 175 - H_q / 2;
@@ -415,24 +545,63 @@ export function getVisualizationItems(algorithm, result, inputTensor) {
                 type: "heatmap"
             });
         } else if (shape.length >= 3) {
+            let slice2D = inputTensor;
+            while (Array.isArray(slice2D) && Array.isArray(slice2D[0]) && Array.isArray(slice2D[0][0])) {
+                slice2D = slice2D[0];
+            }
+            const sShape = getTensorShape(slice2D);
             items.push({
-                label: `Original Input Tensor (Mode-1 First Slice, Shape: ${shape.join("x")})`,
-                data: inputTensor[0],
-                rows: shape[1],
-                cols: shape[2],
+                label: `Original Input Tensor (2D Slice, Shape: ${shape.join("x")})`,
+                data: slice2D,
+                rows: sShape[0] || 1,
+                cols: sShape[1] || 1,
                 type: "heatmap"
             });
         }
     }
 
-    // 2. Singular / Eigenvalues
-    if (result.singular_values || result.eigenvalues) {
-        const vals = result.singular_values || result.eigenvalues;
+    // 2. Singular Values / Eigenvalues / Weights
+    if (result.singular_values && Array.isArray(result.singular_values)) {
+        if (result.singular_values.length > 0 && Array.isArray(result.singular_values[0])) {
+            result.singular_values.forEach((modeVals, idx) => {
+                if (Array.isArray(modeVals) && modeVals.length > 0) {
+                    const prefix = algorithm === "tensor_train" ? `Cut ${idx + 1}` : `Mode ${idx + 1}`;
+                    items.push({
+                        label: `Singular Value Spectrum (${prefix})`,
+                        data: modeVals,
+                        rows: 1,
+                        cols: modeVals.length,
+                        type: "bar"
+                    });
+                }
+            });
+        } else {
+            items.push({
+                label: "Singular Value Spectrum",
+                data: result.singular_values,
+                rows: 1,
+                cols: result.singular_values.length,
+                type: "bar"
+            });
+        }
+    }
+
+    if (result.eigenvalues && Array.isArray(result.eigenvalues)) {
         items.push({
-            label: result.singular_values ? "Singular Value Spectrum" : "Eigenvalue Spectrum",
-            data: vals,
+            label: "Eigenvalue Spectrum",
+            data: result.eigenvalues,
             rows: 1,
-            cols: vals.length,
+            cols: result.eigenvalues.length,
+            type: "bar"
+        });
+    }
+
+    if (result.weights && Array.isArray(result.weights)) {
+        items.push({
+            label: "Component Weights Spectrum (λ)",
+            data: result.weights,
+            rows: 1,
+            cols: result.weights.length,
             type: "bar"
         });
     }
@@ -464,11 +633,16 @@ export function getVisualizationItems(algorithm, result, inputTensor) {
                 type: "heatmap"
             });
         } else if (shape.length >= 3) {
+            let coreSlice2D = core;
+            while (Array.isArray(coreSlice2D) && Array.isArray(coreSlice2D[0]) && Array.isArray(coreSlice2D[0][0])) {
+                coreSlice2D = coreSlice2D[0];
+            }
+            const sShape = getTensorShape(coreSlice2D);
             items.push({
-                label: `Core Tensor (Mode-1 First Slice, Shape: ${shape.join("x")})`,
-                data: core[0],
-                rows: shape[1],
-                cols: shape[2],
+                label: `Core Tensor (2D Slice, Shape: ${shape.join("x")})`,
+                data: coreSlice2D,
+                rows: sShape[0] || 1,
+                cols: sShape[1] || 1,
                 type: "heatmap"
             });
         }
@@ -503,11 +677,16 @@ export function getVisualizationItems(algorithm, result, inputTensor) {
                     type: "heatmap"
                 });
             } else if (shape.length >= 3) {
+                let coreSlice2D = core;
+                while (Array.isArray(coreSlice2D) && Array.isArray(coreSlice2D[0]) && Array.isArray(coreSlice2D[0][0])) {
+                    coreSlice2D = coreSlice2D[0];
+                }
+                const sShape = getTensorShape(coreSlice2D);
                 items.push({
-                    label: `TT Core ${idx + 1} (Mode-1 First Slice, Shape: ${shape.join("x")})`,
-                    data: core[0],
-                    rows: shape[1],
-                    cols: shape[2],
+                    label: `TT Core ${idx + 1} (2D Slice, Shape: ${shape.join("x")})`,
+                    data: coreSlice2D,
+                    rows: sShape[0] || 1,
+                    cols: sShape[1] || 1,
                     type: "heatmap"
                 });
             }
@@ -518,6 +697,9 @@ export function getVisualizationItems(algorithm, result, inputTensor) {
 }
 
 export function createBarChartSVG(data) {
+    if (!Array.isArray(data) || data.length === 0) {
+        return document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    }
     const svgns = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(svgns, "svg");
     svg.setAttribute("viewBox", "0 0 400 200");
@@ -527,8 +709,18 @@ export function createBarChartSVG(data) {
     const width = 400 - margin.left - margin.right;
     const height = 200 - margin.top - margin.bottom;
 
-    const maxVal = Math.max(...data) || 1;
-    const barWidth = width / data.length;
+    const numData = data.map(v => {
+        if (typeof v === 'number' && !isNaN(v)) return v;
+        if (typeof v === 'string') {
+            const p = parseFloat(v);
+            return isNaN(p) ? 0 : p;
+        }
+        if (Array.isArray(v) && typeof v[0] === 'number') return v[0];
+        return 0;
+    });
+
+    const maxVal = Math.max(...numData.map(v => Math.abs(v)), 1e-9);
+    const barWidth = width / (data.length || 1);
 
     // Grid lines
     for (let i = 0; i <= 4; i++) {
@@ -555,8 +747,9 @@ export function createBarChartSVG(data) {
     }
 
     // Draw bars
-    data.forEach((val, i) => {
-        const h = (val / maxVal) * height;
+    data.forEach((rawVal, i) => {
+        const numVal = numData[i];
+        const h = Math.min(height, (Math.abs(numVal) / maxVal) * height);
         const x = margin.left + i * barWidth + 2;
         const y = margin.top + height - h;
         const w = Math.max(1, barWidth - 4);
@@ -565,13 +758,19 @@ export function createBarChartSVG(data) {
         rect.setAttribute("x", x);
         rect.setAttribute("y", y);
         rect.setAttribute("width", w);
-        rect.setAttribute("height", h);
+        rect.setAttribute("height", Math.max(1, h));
         rect.setAttribute("fill", "url(#bar-gradient)");
         rect.setAttribute("rx", "3");
 
-        // Add simple tooltip value
+        let displayVal = rawVal;
+        if (typeof rawVal === 'number') {
+            displayVal = rawVal.toFixed(5);
+        } else if (Array.isArray(rawVal)) {
+            displayVal = JSON.stringify(rawVal);
+        }
+
         const title = document.createElementNS(svgns, "title");
-        title.textContent = `Index ${i}: ${val.toFixed(5)}`;
+        title.textContent = `Index ${i}: ${displayVal}`;
         rect.appendChild(title);
 
         svg.appendChild(rect);
@@ -676,12 +875,15 @@ export function createComparisonBarChart(labels, values, color) {
 }
 
 export function createHeatmapSVG(matrix, actualRows, actualCols, globalMax) {
+    if (!matrix || !Array.isArray(matrix) || matrix.length === 0) {
+        return document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    }
     // Truncate to maximum 12x12 for visualization clarity and speed
     const maxRows = 12;
     const maxCols = 12;
     
     const numRows = Math.min(matrix.length, maxRows);
-    const numCols = Math.min(matrix[0].length, maxCols);
+    const numCols = Math.min(Array.isArray(matrix[0]) ? matrix[0].length : 1, maxCols);
 
     const svgns = "http://www.w3.org/2000/svg";
     const svg = document.createElementNS(svgns, "svg");
@@ -699,8 +901,8 @@ export function createHeatmapSVG(matrix, actualRows, actualCols, globalMax) {
 
     // Calculate ratio-wise visual sizes
     const maxPixelSize = 200; // standard maximum bounds
-    const widthPx = Math.max(30, (actualCols / globalMax) * maxPixelSize);
-    const heightPx = Math.max(30, (actualRows / globalMax) * maxPixelSize);
+    const widthPx = Math.max(30, (actualCols / (globalMax || 1)) * maxPixelSize);
+    const heightPx = Math.max(30, (actualRows / (globalMax || 1)) * maxPixelSize);
     
     svg.style.width = `${widthPx}px`;
     svg.style.height = `${heightPx}px`;
@@ -708,32 +910,38 @@ export function createHeatmapSVG(matrix, actualRows, actualCols, globalMax) {
     svg.style.display = "block";
 
     // Flatten values to find min / max for normalization
-    let allVals = [];
+    let allNumericVals = [];
     for(let r=0; r<numRows; r++) {
         for(let c=0; c<numCols; c++) {
-            allVals.push(matrix[r][c]);
+            const raw = Array.isArray(matrix[r]) ? matrix[r][c] : matrix[r];
+            if (typeof raw === 'number' && !isNaN(raw)) {
+                allNumericVals.push(raw);
+            } else if (typeof raw === 'string') {
+                const parsed = parseFloat(raw);
+                if (!isNaN(parsed)) allNumericVals.push(parsed);
+            }
         }
     }
     
-    const minVal = Math.min(...allVals);
-    const maxVal = Math.max(...allVals);
-    const range = maxVal - minVal || 1;
+    const minVal = allNumericVals.length ? Math.min(...allNumericVals) : 0;
+    const maxVal = allNumericVals.length ? Math.max(...allNumericVals) : 1;
 
     for (let r = 0; r < numRows; r++) {
         for (let c = 0; c < numCols; c++) {
-            const val = matrix[r][c];
+            const val = Array.isArray(matrix[r]) ? matrix[r][c] : matrix[r];
+            const numVal = typeof val === 'number' ? val : (parseFloat(val) || 0);
             const x = c * (cellSize + gap);
             const y = r * (cellSize + gap);
 
             // Normalize color between cyan (positive) and violet (negative)
             // Zero is represented by dark slate
             let color = "var(--heatmap-zero)";
-            if (val > 0) {
-                const intensity = val / (maxVal || 1);
-                color = `rgba(6, 182, 212, ${Math.max(0.15, intensity)})`;
-            } else if (val < 0) {
-                const intensity = Math.abs(val) / (Math.abs(minVal) || 1);
-                color = `rgba(139, 92, 246, ${Math.max(0.15, intensity)})`;
+            if (numVal > 0) {
+                const intensity = numVal / (maxVal || 1);
+                color = `rgba(6, 182, 212, ${Math.max(0.15, Math.min(1, intensity))})`;
+            } else if (numVal < 0) {
+                const intensity = Math.abs(numVal) / (Math.abs(minVal) || 1);
+                color = `rgba(139, 92, 246, ${Math.max(0.15, Math.min(1, intensity))})`;
             }
 
             const rect = document.createElementNS(svgns, "rect");
@@ -745,8 +953,13 @@ export function createHeatmapSVG(matrix, actualRows, actualCols, globalMax) {
             rect.setAttribute("rx", "2");
             rect.setAttribute("stroke", "var(--panel-border)");
 
+            let displayVal = val;
+            if (typeof val === 'number') {
+                displayVal = val.toFixed(5);
+            }
+
             const tooltip = document.createElementNS(svgns, "title");
-            tooltip.textContent = `[Row ${r}, Col ${c}]: ${val.toFixed(5)}`;
+            tooltip.textContent = `[Row ${r}, Col ${c}]: ${displayVal}`;
             rect.appendChild(tooltip);
 
             svg.appendChild(rect);
