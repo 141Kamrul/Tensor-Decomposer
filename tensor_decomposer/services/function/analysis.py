@@ -5,14 +5,20 @@ from typing import Any, Iterable
 import numpy as np
 
 from ..algorithms import run_algorithm
-from .tensor_utils import count_parameters, reconstruct_cp, reconstruct_tt, reconstruct_tucker
+from .tensor_utils import (
+    count_parameters,
+    norm,
+    reconstruct_cp,
+    reconstruct_tt,
+    reconstruct_tucker,
+)
 
 
 def analyze_decomposition(array: np.ndarray, algorithm: str, result: dict[str, Any]) -> dict[str, Any]:
     tensor = np.asarray(array, dtype=float)
     reconstructed = reconstruct_tensor(algorithm, result)
-    absolute_error = float(np.linalg.norm(tensor - reconstructed))
-    relative_error = float(absolute_error / (np.linalg.norm(tensor) + 1e-12))
+    absolute_error = float(norm(tensor - reconstructed))
+    relative_error = float(absolute_error / (norm(tensor) + 1e-12))
     
     # Calculate Mean Absolute Error (MAE) and Root Mean Squared Error (RMSE)
     mean_absolute_error = float(np.mean(np.abs(tensor - reconstructed)))

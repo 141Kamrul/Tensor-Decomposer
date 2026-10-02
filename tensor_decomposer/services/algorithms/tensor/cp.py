@@ -4,7 +4,14 @@ from typing import Any
 
 import numpy as np
 
-from ...function.tensor_utils import as_float_tensor, khatri_rao, matricization
+from ...function.tensor_utils import (
+    as_float_tensor,
+    khatri_rao,
+    matricization,
+    norm,
+    pinv,
+)
+from ..matrix.svd import svd
 
 
 def cp(
@@ -25,7 +32,7 @@ def cp(
     factors: list[np.ndarray] = []
     for mode in range(ndim):
         unfolding = matricization(tensor, mode)
-        u, _, _ = np.linalg.svd(unfolding, full_matrices=False)
+        u = svd(unfolding)["u"]
         if u.shape[1] < rank:
             pad = np.random.randn(u.shape[0], rank - u.shape[1]) * 0.1
             u = np.hstack([u, pad])
@@ -51,11 +58,11 @@ def cp(
             X_n = matricization(tensor, n)
 
             # Solve A_tilde = X_n @ W @ V^\dagger
-            V_pinv = np.linalg.pinv(V)
+            V_pinv = pinv(V)
             A_tilde = X_n @ W @ V_pinv
 
             # Normalize columns of A_tilde and absorb norms into weights vector
-            norms = np.linalg.norm(A_tilde, axis=0)
+            norms = norm(A_tilde, axis=0)
             norms_clean = np.where(norms == 0, 1.0, norms)
             weights = norms
             factors[n] = A_tilde / norms_clean

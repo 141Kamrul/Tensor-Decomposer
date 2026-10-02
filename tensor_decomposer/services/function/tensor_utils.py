@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Iterable
+from typing import Any, Iterable
 
 import numpy as np
 
@@ -35,6 +35,14 @@ def khatri_rao(matrices: list[np.ndarray]) -> np.ndarray:
             raise ValueError(f"Column count mismatch for Khatri-Rao product: {result.shape[1]} vs {mat.shape[1]}")
         result = (result[:, None, :] * mat[None, :, :]).reshape(-1, result.shape[1])
     return result
+
+
+def pinv(matrix: np.ndarray) -> np.ndarray:
+    return np.linalg.pinv(matrix)
+
+
+def norm(array: np.ndarray, axis: int | tuple[int, ...] | None = None) -> Any:
+    return np.linalg.norm(array, axis=axis)
 
 
 

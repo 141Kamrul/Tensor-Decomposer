@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any, Sequence
 import numpy as np
 
-from .tensor_utils import as_float_tensor, matricization
+from .tensor_utils import as_float_tensor, matricization, norm
 
 
 def shift_hyperslice(
@@ -57,7 +57,7 @@ def tensor_nuclear_norm_loss(tensor: np.ndarray) -> float:
         Aggregated normalized nuclear norm across all mode unfoldings.
     """
     if tensor.ndim < 2:
-        return float(np.linalg.norm(tensor))
+        return float(norm(tensor))
 
     total_loss = 0.0
     for mode in range(tensor.ndim):

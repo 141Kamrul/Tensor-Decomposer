@@ -4,7 +4,8 @@ from typing import Any
 
 import numpy as np
 
-from ...function.tensor_utils import as_float_tensor
+from ...function.tensor_utils import as_float_tensor, norm
+from ..matrix.svd import svd
 
 
 def tensor_train(
@@ -51,7 +52,7 @@ def tensor_train(
             if r < 1:
                 raise ValueError(f"TT-rank at index {idx} must be >= 1, got {r}")
 
-    tensor_norm = float(np.linalg.norm(tensor))
+    tensor_norm = float(norm(tensor))
     delta = 0.0
     if tol is not None and ndim > 1 and tensor_norm > 0:
         delta = (tol / np.sqrt(ndim - 1)) * tensor_norm
@@ -66,7 +67,8 @@ def tensor_train(
     for mode in range(ndim - 1):
         n_k = tensor.shape[mode]
         unfolding = unfolding.reshape(rank_prev * n_k, -1)
-        u, s, vh = np.linalg.svd(unfolding, full_matrices=False)
+        svd_res = svd(unfolding)
+        u, s, vh = svd_res["u"], svd_res["singular_values"], svd_res["vh"]
 
         singular_values_list.append(s)
 

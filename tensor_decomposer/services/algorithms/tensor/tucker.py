@@ -4,7 +4,13 @@ from typing import Any
 
 import numpy as np
 
-from ...function.tensor_utils import as_float_tensor, mode_n_product, matricization
+from ...function.tensor_utils import (
+    as_float_tensor,
+    matricization,
+    mode_n_product,
+    norm,
+)
+from ..matrix.svd import svd
 
 
 def tucker(
@@ -29,7 +35,7 @@ def tucker(
     factors: list[np.ndarray] = []
     for mode in range(ndim):
         unfolding = matricization(tensor, mode)
-        u, _, _ = np.linalg.svd(unfolding, full_matrices=False)
+        u = svd(unfolding)["u"]
         target_rank = min(ranks[mode], u.shape[1])
         factors.append(u[:, :target_rank])
 
@@ -45,14 +51,14 @@ def tucker(
 
             # Unfold Y along mode n and extract leading left singular vectors
             Y_n = matricization(Y, n)
-            u, _, _ = np.linalg.svd(Y_n, full_matrices=False)
+            u = svd(Y_n)["u"]
             factors[n] = u[:, :ranks[n]]
 
         # Compute core tensor norm for convergence monitoring
         core_test = tensor
         for m in range(ndim):
             core_test = mode_n_product(core_test, factors[m].T, m)
-        core_norm = float(np.linalg.norm(core_test))
+        core_norm = float(norm(core_test))
         if abs(core_norm - prev_norm) < tol:
             break
         prev_norm = core_norm

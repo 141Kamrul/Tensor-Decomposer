@@ -4,7 +4,8 @@ from typing import Any
 
 import numpy as np
 
-from ...function.tensor_utils import as_float_tensor, mode_n_product, matricization
+from ...function.tensor_utils import as_float_tensor, matricization, mode_n_product
+from ..matrix.svd import svd
 
 
 def hosvd(array: np.ndarray, ranks: list[int] | None = None) -> dict[str, Any]:
@@ -52,7 +53,8 @@ def hosvd(array: np.ndarray, ranks: list[int] | None = None) -> dict[str, Any]:
 
     for mode in range(ndim):
         unfolding = matricization(tensor, mode)
-        u, s, _ = np.linalg.svd(unfolding, full_matrices=False)
+        svd_res = svd(unfolding)
+        u, s = svd_res["u"], svd_res["singular_values"]
 
         target_rank = ranks[mode] if ranks is not None else u.shape[1]
         target_rank = min(target_rank, u.shape[1])
