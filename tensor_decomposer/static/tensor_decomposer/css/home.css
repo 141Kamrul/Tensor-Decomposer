@@ -946,3 +946,47 @@ tr:hover td {
 .btn-compare:active {
     transform: scale(0.98);
 }
+
+/* 3D Tensor Interactive Slice Controls */
+.slice-control-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    margin: 0.5rem 0 0.75rem 0;
+    padding: 0.45rem 0.75rem;
+    background: var(--table-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+}
+
+.slice-mode-select {
+    background: var(--input-bg, #0f172a);
+    color: var(--text-primary);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-family: inherit;
+    cursor: pointer;
+    outline: none;
+}
+
+.slice-range-slider {
+    flex: 1;
+    accent-color: var(--accent-cyan, #06b6d4);
+    cursor: pointer;
+    height: 4px;
+}
+
+.slice-badge {
+    font-size: 0.75rem;
+    color: var(--accent-cyan);
+    white-space: nowrap;
+}
+
+.heatmap-3d-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}

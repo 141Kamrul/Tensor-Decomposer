@@ -6,6 +6,8 @@ import {
     createComparisonBarChart 
 } from './charts.js';
 
+import { extract2DSlice, getTensorShape } from './helpers.js';
+
 export function createVisualCard(title, subtitle) {
     const card = document.createElement("div");
     card.className = "visual-card";
@@ -54,7 +56,7 @@ export function renderVisualizations(algorithm, result, inputTensor) {
     // Find global maximum dimension among all heatmaps to establish the scale ratio
     let globalMax = 1;
     items.forEach(item => {
-        if (item.type === "heatmap") {
+        if (item.type === "heatmap" || item.type === "heatmap3d") {
             globalMax = Math.max(globalMax, item.rows, item.cols);
         }
     });
@@ -74,6 +76,82 @@ export function renderVisualizations(algorithm, result, inputTensor) {
             const subtitle = isTruncated ? `Showing top 12x12 slice of actual ${item.rows}x${item.cols} matrix` : `Shape: ${item.rows}x${item.cols}`;
             const card = createVisualCard(item.label, subtitle);
             card.appendChild(createHeatmapSVG(item.data, item.rows, item.cols, globalMax));
+            grid.appendChild(card);
+        } else if (item.type === "heatmap3d") {
+            const raw = item.rawTensor;
+            const shape = item.shape || getTensorShape(raw);
+            const numModes = shape.length;
+            
+            const card = createVisualCard(item.label, `Interactive 3D Slice Viewer (Shape: ${shape.join("×")})`);
+            
+            const controlsBar = document.createElement("div");
+            controlsBar.className = "slice-control-bar";
+            
+            const modeSelect = document.createElement("select");
+            modeSelect.className = "slice-mode-select";
+            for (let m = 0; m < numModes; m++) {
+                const opt = document.createElement("option");
+                opt.value = m;
+                opt.textContent = `Mode ${m} (Dim ${shape[m]})`;
+                modeSelect.appendChild(opt);
+            }
+            controlsBar.appendChild(modeSelect);
+            
+            const slider = document.createElement("input");
+            slider.type = "range";
+            slider.className = "slice-range-slider";
+            slider.min = "0";
+            slider.max = String(Math.max(0, shape[0] - 1));
+            slider.value = "0";
+            controlsBar.appendChild(slider);
+            
+            const badge = document.createElement("span");
+            badge.className = "slice-badge font-mono";
+            badge.textContent = `Slice 1 / ${shape[0]}`;
+            controlsBar.appendChild(badge);
+            
+            card.appendChild(controlsBar);
+            
+            const subTitleEl = card.querySelector(".visual-card-subtitle");
+
+            const heatmapWrapper = document.createElement("div");
+            heatmapWrapper.className = "heatmap-3d-wrapper";
+            card.appendChild(heatmapWrapper);
+
+            function updateSlice() {
+                const axis = parseInt(modeSelect.value, 10);
+                const maxIndex = Math.max(0, shape[axis] - 1);
+                
+                slider.max = String(maxIndex);
+                if (parseInt(slider.value, 10) > maxIndex) {
+                    slider.value = String(maxIndex);
+                }
+                const idx = parseInt(slider.value, 10);
+                
+                badge.textContent = `Slice ${idx + 1} / ${shape[axis]}`;
+                
+                const slice2D = extract2DSlice(raw, axis, idx);
+                const sliceShape = getTensorShape(slice2D);
+                const sRows = sliceShape[0] || 1;
+                const sCols = sliceShape[1] || 1;
+
+                if (subTitleEl) {
+                    const isTrunc = sRows > 12 || sCols > 12;
+                    subTitleEl.textContent = `Mode ${axis} Slice [${idx + 1}/${shape[axis]}] — Shape: ${sRows}×${sCols}` + (isTrunc ? " (showing top 12×12)" : "");
+                }
+
+                heatmapWrapper.innerHTML = "";
+                heatmapWrapper.appendChild(createHeatmapSVG(slice2D, sRows, sCols, globalMax));
+            }
+
+            modeSelect.addEventListener("change", () => {
+                slider.value = "0";
+                updateSlice();
+            });
+            slider.addEventListener("input", updateSlice);
+
+            updateSlice();
+
             grid.appendChild(card);
         }
     });

@@ -4,7 +4,7 @@ from typing import Any, Sequence
 import numpy as np
 
 from .tensor_utils import as_float_tensor, matricization, norm
-
+from ..algorithms.matrix.svd import svd
 
 def shift_hyperslice(
     tensor: np.ndarray,
@@ -62,7 +62,7 @@ def tensor_nuclear_norm_loss(tensor: np.ndarray) -> float:
     total_loss = 0.0
     for mode in range(tensor.ndim):
         unfolding = matricization(tensor, mode)
-        singular_values = np.linalg.svd(unfolding, compute_uv=False)
+        singular_values = svd(unfolding)["singular_values"]
         total_loss += float(np.sum(singular_values) / np.sqrt(tensor.shape[mode]))
     return total_loss
 

@@ -547,17 +547,13 @@ export function getVisualizationItems(algorithm, result, inputTensor) {
                 type: "heatmap"
             });
         } else if (shape.length >= 3) {
-            let slice2D = inputTensor;
-            while (Array.isArray(slice2D) && Array.isArray(slice2D[0]) && Array.isArray(slice2D[0][0])) {
-                slice2D = slice2D[0];
-            }
-            const sShape = getTensorShape(slice2D);
             items.push({
-                label: `Original Input Tensor (2D Slice, Shape: ${shape.join("x")})`,
-                data: slice2D,
-                rows: sShape[0] || 1,
-                cols: sShape[1] || 1,
-                type: "heatmap"
+                label: `Original Input Tensor (${shape.join("×")})`,
+                rawTensor: inputTensor,
+                shape: shape,
+                rows: shape[1] || 1,
+                cols: shape[2] || 1,
+                type: "heatmap3d"
             });
         }
     }
@@ -613,7 +609,7 @@ export function getVisualizationItems(algorithm, result, inputTensor) {
         result.factors.forEach((factor, idx) => {
             const shape = getTensorShape(factor);
             items.push({
-                label: `Factor Matrix - Mode ${idx + 1} (${shape.join("x")})`,
+                label: `Factor Matrix - Mode ${idx + 1} (${shape.join("×")})`,
                 data: factor,
                 rows: shape[0] || 1,
                 cols: shape[1] || 1,
@@ -628,24 +624,20 @@ export function getVisualizationItems(algorithm, result, inputTensor) {
         const shape = getTensorShape(core);
         if (shape.length === 2) {
             items.push({
-                label: `Core Tensor (${shape.join("x")})`,
+                label: `Core Tensor (${shape.join("×")})`,
                 data: core,
                 rows: shape[0],
                 cols: shape[1],
                 type: "heatmap"
             });
         } else if (shape.length >= 3) {
-            let coreSlice2D = core;
-            while (Array.isArray(coreSlice2D) && Array.isArray(coreSlice2D[0]) && Array.isArray(coreSlice2D[0][0])) {
-                coreSlice2D = coreSlice2D[0];
-            }
-            const sShape = getTensorShape(coreSlice2D);
             items.push({
-                label: `Core Tensor (2D Slice, Shape: ${shape.join("x")})`,
-                data: coreSlice2D,
-                rows: sShape[0] || 1,
-                cols: sShape[1] || 1,
-                type: "heatmap"
+                label: `Core Tensor G (${shape.join("×")})`,
+                rawTensor: core,
+                shape: shape,
+                rows: shape[1] || 1,
+                cols: shape[2] || 1,
+                type: "heatmap3d"
             });
         }
     }
@@ -657,7 +649,7 @@ export function getVisualizationItems(algorithm, result, inputTensor) {
             const data = result[key];
             const shape = getTensorShape(data);
             items.push({
-                label: `Matrix: ${key.toUpperCase()} (${shape.join("x")})`,
+                label: `Matrix: ${key.toUpperCase()} (${shape.join("×")})`,
                 data: data,
                 rows: shape[0] || 1,
                 cols: shape[1] || 1,
@@ -672,24 +664,20 @@ export function getVisualizationItems(algorithm, result, inputTensor) {
             const shape = getTensorShape(core);
             if (shape.length === 2) {
                 items.push({
-                    label: `TT Core ${idx + 1} (${shape.join("x")})`,
+                    label: `TT Core ${idx + 1} (${shape.join("×")})`,
                     data: core,
                     rows: shape[0],
                     cols: shape[1],
                     type: "heatmap"
                 });
             } else if (shape.length >= 3) {
-                let coreSlice2D = core;
-                while (Array.isArray(coreSlice2D) && Array.isArray(coreSlice2D[0]) && Array.isArray(coreSlice2D[0][0])) {
-                    coreSlice2D = coreSlice2D[0];
-                }
-                const sShape = getTensorShape(coreSlice2D);
                 items.push({
-                    label: `TT Core ${idx + 1} (2D Slice, Shape: ${shape.join("x")})`,
-                    data: coreSlice2D,
-                    rows: sShape[0] || 1,
-                    cols: sShape[1] || 1,
-                    type: "heatmap"
+                    label: `TT Core ${idx + 1} (${shape.join("×")})`,
+                    rawTensor: core,
+                    shape: shape,
+                    rows: shape[1] || 1,
+                    cols: shape[2] || 1,
+                    type: "heatmap3d"
                 });
             }
         });

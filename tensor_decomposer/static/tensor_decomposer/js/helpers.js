@@ -9,6 +9,49 @@ export function getTensorShape(tensor) {
     return shape;
 }
 
+export function extract2DSlice(tensor3D, sliceAxis = 0, sliceIndex = 0) {
+    if (!Array.isArray(tensor3D)) return [];
+    const shape = getTensorShape(tensor3D);
+    if (shape.length < 3) return tensor3D;
+
+    const axisDim = shape[sliceAxis] || 1;
+    const idx = Math.max(0, Math.min(sliceIndex, axisDim - 1));
+
+    if (shape.length === 3) {
+        if (sliceAxis === 0) {
+            return tensor3D[idx] || [];
+        }
+        if (sliceAxis === 1) {
+            return tensor3D.map(plane => (Array.isArray(plane) ? plane[idx] || [] : []));
+        }
+        if (sliceAxis === 2) {
+            return tensor3D.map(plane =>
+                Array.isArray(plane)
+                    ? plane.map(row => (Array.isArray(row) ? row[idx] ?? 0 : 0))
+                    : []
+            );
+        }
+    }
+
+    if (sliceAxis === 0) {
+        let current = tensor3D[idx];
+        while (Array.isArray(current) && Array.isArray(current[0]) && Array.isArray(current[0][0])) {
+            current = current[0];
+        }
+        return current || [];
+    }
+
+    return extract2DSliceND(tensor3D, sliceAxis, idx, 0);
+}
+
+function extract2DSliceND(arr, targetAxis, targetIdx, currentAxis) {
+    if (!Array.isArray(arr)) return arr;
+    if (currentAxis === targetAxis) {
+        return arr[targetIdx] || [];
+    }
+    return arr.map(sub => extract2DSliceND(sub, targetAxis, targetIdx, currentAxis + 1));
+}
+
 export function formatNumber(num) {
     if (typeof num !== 'number') return String(num);
     let str = num.toFixed(4);
