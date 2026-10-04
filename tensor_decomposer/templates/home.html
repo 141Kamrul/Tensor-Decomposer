@@ -50,7 +50,7 @@
             </div>
             <div class="hero-stats">
                 <article class="stat-box">
-                    <strong>4</strong>
+                    <strong>8</strong>
                     <span>Tensor Methods</span>
                 </article>
                 <article class="stat-box">
@@ -87,7 +87,17 @@
                     {% csrf_token %}
 
                     <div class="field-group">
-                        <label for="tensor_input">Tensor Input (JSON Array)</label>
+                        <div class="field-header-row">
+                            <label for="tensor_input">Tensor Input (JSON Array)</label>
+                            <span id="random-tensor-feedback" class="random-feedback-badge hidden">✓ Inserted</span>
+                        </div>
+                        <div class="random-tensor-bar">
+                            <span class="random-bar-label">🎲 Auto Insert:</span>
+                            <button type="button" class="btn-random-chip" data-shape="3,3,3" title="Auto insert random 3×3×3 3D tensor (27 elements)">3×3×3 (3D)</button>
+                            <button type="button" class="btn-random-chip" data-shape="4,3,2" title="Auto insert random 4×3×2 3D tensor (24 elements)">4×3×2 (3D)</button>
+                            <button type="button" class="btn-random-chip" data-shape="2,2,2,2" title="Auto insert random 2×2×2×2 4D tensor (16 elements)">4D (2⁴)</button>
+                            <button type="button" class="btn-random-chip" data-shape="3,2,3,2" title="Auto insert random 3×2×3×2 4D tensor (36 elements)">4D (3×2×3×2)</button>
+                        </div>
                         <textarea id="tensor_input" name="tensor_input" rows="7" placeholder="[[[1, 2], [3, 4]], [[5, 6], [7, 8]]]">{{ tensor_input|default:'' }}</textarea>
                     </div>
 
@@ -113,12 +123,6 @@
                                     <option value="tucker_puzzle" {% if algorithm == 'tucker_puzzle' or algorithm == 'tucker+puzzle' %}selected{% endif %}>Tucker + PuzzleTensor</option>
                                     <option value="hosvd_puzzle" {% if algorithm == 'hosvd_puzzle' or algorithm == 'hosvd+puzzle' %}selected{% endif %}>HOSVD + PuzzleTensor</option>
                                     <option value="tensor_train_puzzle" {% if algorithm == 'tensor_train_puzzle' or algorithm == 'tensor_train+puzzle' %}selected{% endif %}>Tensor Train + PuzzleTensor</option>
-                                </optgroup>
-                                <optgroup label="Matrix reference methods">
-                                    <option value="svd" {% if algorithm == 'svd' %}selected{% endif %}>SVD</option>
-                                    <option value="eigendecomposition" {% if algorithm == 'eigendecomposition' %}selected{% endif %}>Eigendecomposition</option>
-                                    <option value="qr" {% if algorithm == 'qr' %}selected{% endif %}>QR Decomposition</option>
-                                    <option value="lu" {% if algorithm == 'lu' %}selected{% endif %}>LU Decomposition</option>
                                 </optgroup>
                             </select>
                         </div>
@@ -183,7 +187,7 @@
                     </div>
                     
                     <div class="reconstructed-head-wrapper" style="margin-top: 1rem;">
-                        <span class="metric-label" style="display: block; margin-bottom: 0.5rem;">Reconstructed Matrix Element Head (min(10, len(tensor)))</span>
+                        <span class="metric-label" style="display: block; margin-bottom: 0.5rem;">Reconstructed Tensor Element Head (min(10, len(tensor)))</span>
                         <div class="code-container" style="max-height: 15rem;">
                             <pre id="metric-recon-head">{{ analysis.reconstructed_head }}</pre>
                         </div>

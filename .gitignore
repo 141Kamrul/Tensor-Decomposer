@@ -61,3 +61,5 @@ build/
 dist/
 *.egg-info/
 .vercel/
+
+node_modules/

@@ -61,7 +61,6 @@ def _build_base_context(tensor: object | None, algorithm: str, action: str) -> d
         "algorithm_labels": ALGORITHM_LABELS,
         "tensor_methods": TENSOR_METHODS,
         "puzzle_methods": PUZZLE_METHODS,
-        "reference_methods": REFERENCE_METHODS,
         "cache_buster": str(int(time.time())),
     }
     if tensor is not None:
@@ -72,7 +71,7 @@ def _build_base_context(tensor: object | None, algorithm: str, action: str) -> d
 def home(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         raw_tensor = request.POST.get("tensor_input", "")
-        algorithm = request.POST.get("algorithm", "svd")
+        algorithm = request.POST.get("algorithm", "cp")
         action = request.POST.get("action", "decompose")
         uploaded_file = request.FILES.get("tensor_file")
 
@@ -98,7 +97,7 @@ def home(request: HttpRequest) -> HttpResponse:
                 return render(request, "home.html", context)
 
             if action == "compare":
-                methods_to_compare = TENSOR_METHODS + PUZZLE_METHODS if tensor.ndim >= 2 else REFERENCE_METHODS
+                methods_to_compare = TENSOR_METHODS + PUZZLE_METHODS
                 comparison = compare_methods(tensor, methods_to_compare)
                 export_path = export_result({"tensor": tensor_data, "comparison": comparison}, output_dir=Path("results"))
                 context = _build_base_context(tensor_data, algorithm, action)

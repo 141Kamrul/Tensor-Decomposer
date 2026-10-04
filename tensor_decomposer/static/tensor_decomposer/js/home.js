@@ -39,6 +39,54 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
+    // Auto insert random tensor logic
+    const randomChips = document.querySelectorAll(".btn-random-chip");
+    const feedbackBadge = document.getElementById("random-tensor-feedback");
+
+    function generateRandomTensor(dims) {
+        if (dims.length === 1) {
+            return Array.from({ length: dims[0] }, () => Math.floor(Math.random() * 9) + 1);
+        }
+        const [first, ...rest] = dims;
+        return Array.from({ length: first }, () => generateRandomTensor(rest));
+    }
+
+    function formatTensorJSON(tensor) {
+        const rawJson = JSON.stringify(tensor, null, 2);
+        // Collapse innermost arrays into compact single lines: [1, 2, 3]
+        return rawJson.replace(/\[\s*([0-9\.\-]+(?:\s*,\s*[0-9\.\-]+)*)\s*\]/g, (match, nums) => {
+            return "[" + nums.replace(/\s+/g, " ") + "]";
+        });
+    }
+
+    randomChips.forEach(chip => {
+        chip.addEventListener("click", () => {
+            const shapeStr = chip.getAttribute("data-shape");
+            if (!shapeStr || !inputTextArea) return;
+            const dims = shapeStr.split(",").map(s => parseInt(s.trim(), 10)).filter(n => !isNaN(n) && n > 0);
+            if (dims.length === 0) return;
+
+            const tensor = generateRandomTensor(dims);
+            inputTextArea.value = formatTensorJSON(tensor);
+            if (fileInputField) fileInputField.value = "";
+
+            // Flash textarea border animation
+            inputTextArea.classList.remove("textarea-flash");
+            void inputTextArea.offsetWidth;
+            inputTextArea.classList.add("textarea-flash");
+
+            // Feedback badge
+            if (feedbackBadge) {
+                feedbackBadge.textContent = `✓ Inserted ${dims.join("×")}`;
+                feedbackBadge.classList.remove("hidden");
+                clearTimeout(feedbackBadge._timer);
+                feedbackBadge._timer = setTimeout(() => {
+                    feedbackBadge.classList.add("hidden");
+                }, 2200);
+            }
+        });
+    });
+
     // Panel elements
     const panelError = document.getElementById("panel-error");
     const panelDecomposition = document.getElementById("panel-decomposition");
