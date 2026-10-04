@@ -8,6 +8,20 @@ from typing import Any
 import numpy as np
 
 
+def _to_clean_ndarray(data: Any) -> np.ndarray:
+    try:
+        arr = np.asarray(data, dtype=float)
+    except ValueError as err:
+        if "inhomogeneous" in str(err) or "setting an array element with a sequence" in str(err):
+            raise ValueError("Incomplete or ragged tensor input: rows or sub-slices have mismatched lengths.") from err
+        raise
+    if arr.ndim == 0:
+        raise ValueError("Scalar numbers are not multi-dimensional tensors. Provide a matrix or tensor array.")
+    if arr.size == 0:
+        raise ValueError("Tensor input contains no elements (empty tensor).")
+    return arr
+
+
 def parse_tensor_input(raw_value: str) -> np.ndarray:
     """Parse raw tensor input from JSON, Python literal, or text matrix formats into a NumPy ndarray.
 
@@ -25,17 +39,20 @@ def parse_tensor_input(raw_value: str) -> np.ndarray:
     if not text:
         raise ValueError("Tensor input is empty")
 
+    if text.count("[") != text.count("]"):
+        raise ValueError("Incomplete tensor input: unclosed or unbalanced brackets detected.")
+
     # 1. Direct JSON parse
     try:
         data = json.loads(text)
-        return np.asarray(data, dtype=float)
-    except (json.JSONDecodeError, ValueError):
+        return _to_clean_ndarray(data)
+    except json.JSONDecodeError:
         pass
 
     # 2. Direct Python literal_eval (handles trailing commas, tuples, Python numbers)
     try:
         data = ast.literal_eval(text)
-        return np.asarray(data, dtype=float)
+        return _to_clean_ndarray(data)
     except (ValueError, SyntaxError):
         pass
 
@@ -49,14 +66,14 @@ def parse_tensor_input(raw_value: str) -> np.ndarray:
         # Try JSON on bracket content
         try:
             data = json.loads(bracket_content)
-            return np.asarray(data, dtype=float)
-        except (json.JSONDecodeError, ValueError):
+            return _to_clean_ndarray(data)
+        except json.JSONDecodeError:
             pass
 
         # Try ast.literal_eval on bracket content
         try:
             data = ast.literal_eval(bracket_content)
-            return np.asarray(data, dtype=float)
+            return _to_clean_ndarray(data)
         except (ValueError, SyntaxError):
             pass
 
@@ -64,12 +81,12 @@ def parse_tensor_input(raw_value: str) -> np.ndarray:
         cleaned_brackets = re.sub(r",\s*([\]\}])", r"\1", bracket_content)
         try:
             data = json.loads(cleaned_brackets)
-            return np.asarray(data, dtype=float)
-        except (json.JSONDecodeError, ValueError):
+            return _to_clean_ndarray(data)
+        except json.JSONDecodeError:
             pass
         try:
             data = ast.literal_eval(cleaned_brackets)
-            return np.asarray(data, dtype=float)
+            return _to_clean_ndarray(data)
         except (ValueError, SyntaxError):
             pass
 
@@ -78,12 +95,12 @@ def parse_tensor_input(raw_value: str) -> np.ndarray:
         np_formatted = re.sub(r"(?<=\])\s+(?=\[)", ", ", np_formatted)
         try:
             data = json.loads(np_formatted)
-            return np.asarray(data, dtype=float)
-        except (json.JSONDecodeError, ValueError):
+            return _to_clean_ndarray(data)
+        except json.JSONDecodeError:
             pass
         try:
             data = ast.literal_eval(np_formatted)
-            return np.asarray(data, dtype=float)
+            return _to_clean_ndarray(data)
         except (ValueError, SyntaxError):
             pass
 

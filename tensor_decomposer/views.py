@@ -109,7 +109,12 @@ def home(request: HttpRequest) -> HttpResponse:
 
         try:
             if uploaded_file is not None:
-                raw_tensor = uploaded_file.read().decode("utf-8")
+                try:
+                    raw_tensor = uploaded_file.read().decode("utf-8")
+                except UnicodeDecodeError:
+                    raise ValueError(
+                        f"Unsupported file format for '{uploaded_file.name}'. Please upload a valid UTF-8 encoded text or JSON file."
+                    )
             tensor = parse_tensor_input(raw_tensor)
             tensor_data = tensor.tolist()
 
