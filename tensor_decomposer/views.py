@@ -102,13 +102,7 @@ def home(request: HttpRequest) -> HttpResponse:
         uploaded_file = request.FILES.get("tensor_file")
 
         parsed_ranks = parse_ranks_input(ranks_input)
-        base_algo = (algorithm or "").lower().replace("+", "_").replace("_puzzle", "")
-        # CP requires a single scalar rank R. If a list of mode ranks was entered, extract the single rank integer
-        if base_algo == "cp" and parsed_ranks is not None:
-            if isinstance(parsed_ranks, list) and len(parsed_ranks) > 0:
-                parsed_ranks = parsed_ranks[0]
-
-        algo_kwargs: dict[str, Any] = {}
+        algo_kwargs: dict[str, any] = {}
         if parsed_ranks is not None:
             algo_kwargs["ranks"] = parsed_ranks
             algo_kwargs["rank"] = parsed_ranks
