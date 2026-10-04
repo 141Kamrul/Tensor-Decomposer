@@ -299,23 +299,24 @@ body {
     border-left: 3px solid #f43f5e;
 }
 
-/* Workspace Layout */
+/* Workspace Layout (Top/Bottom Split) */
 .workspace-grid {
-    display: grid;
-    grid-template-columns: 440px 1fr;
-    gap: 1.5rem;
-    align-items: start;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    width: 100%;
 }
 
-/* Forms & Controls */
+/* Forms & Controls (Top Panel) */
 .control-panel {
     padding: 2rem;
-    position: sticky;
-    top: 2rem;
+    position: relative;
+    top: 0;
+    width: 100%;
 }
 
 .panel-header {
-    margin-bottom: 1.75rem;
+    margin-bottom: 1.5rem;
 }
 
 .panel-header h2 {
@@ -332,6 +333,37 @@ body {
 .tensor-form {
     display: flex;
     flex-direction: column;
+    gap: 1.25rem;
+}
+
+.config-top-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+    gap: 1.75rem;
+    align-items: stretch;
+}
+
+.config-input-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.config-input-column .field-group {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.config-input-column textarea {
+    flex: 1;
+    min-height: 200px;
+    height: 100%;
+}
+
+.config-controls-column {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
     gap: 1.25rem;
 }
 
@@ -869,14 +901,10 @@ tr:hover td {
 }
 
 /* Responsive Queries */
-@media (max-width: 1200px) {
-    .workspace-grid {
+@media (max-width: 992px) {
+    .config-top-layout {
         grid-template-columns: 1fr;
-    }
-    
-    .control-panel {
-        position: relative;
-        top: 0;
+        gap: 1.5rem;
     }
 }
 

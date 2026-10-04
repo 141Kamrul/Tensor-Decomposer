@@ -263,6 +263,7 @@ dependencies = [
     { name = "numpy" },
     { name = "pytest" },
     { name = "scikit-learn" },
+    { name = "tensordecomp" },
     { name = "whitenoise" },
 ]
 
@@ -272,8 +273,24 @@ requires-dist = [
     { name = "numpy", specifier = ">=1.26" },
     { name = "pytest", specifier = ">=8.0" },
     { name = "scikit-learn", specifier = ">=1.3" },
+    { name = "tensordecomp", editable = "tensordecomp" },
     { name = "whitenoise", specifier = ">=6.6.0" },
 ]
+
+[[package]]
+name = "tensordecomp"
+version = "0.1.0"
+source = { editable = "tensordecomp" }
+dependencies = [
+    { name = "numpy" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "numpy", specifier = ">=1.26" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
+]
+provides-extras = ["dev"]
 
 [[package]]
 name = "threadpoolctl"

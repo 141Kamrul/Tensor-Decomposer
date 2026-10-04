@@ -76,71 +76,79 @@
 
         <!-- Main Workspace -->
         <section class="workspace-grid">
-            <!-- Left Column: Controls -->
+            <!-- Top Section: Inputs and Configuration -->
             <section class="panel control-panel">
                 <div class="panel-header">
-                    <h2>Configuration</h2>
+                    <h2>Configuration &amp; Inputs</h2>
                     <p class="panel-subtitle">Define input tensor parameters and algorithm options</p>
                 </div>
                 
                 <form method="post" enctype="multipart/form-data" class="tensor-form">
                     {% csrf_token %}
 
-                    <div class="field-group">
-                        <div class="field-header-row">
-                            <label for="tensor_input">Tensor Input (JSON Array)</label>
-                            <span id="random-tensor-feedback" class="random-feedback-badge hidden">✓ Inserted</span>
-                        </div>
-                        <div class="random-tensor-bar">
-                            <span class="random-bar-label">🎲 Auto Insert:</span>
-                            <button type="button" class="btn-random-chip" data-shape="3,3,3" title="Auto insert random 3×3×3 3D tensor (27 elements)">3×3×3 (3D)</button>
-                            <button type="button" class="btn-random-chip" data-shape="4,3,2" title="Auto insert random 4×3×2 3D tensor (24 elements)">4×3×2 (3D)</button>
-                            <button type="button" class="btn-random-chip" data-shape="2,2,2,2" title="Auto insert random 2×2×2×2 4D tensor (16 elements)">4D (2⁴)</button>
-                            <button type="button" class="btn-random-chip" data-shape="3,2,3,2" title="Auto insert random 3×2×3×2 4D tensor (36 elements)">4D (3×2×3×2)</button>
-                        </div>
-                        <textarea id="tensor_input" name="tensor_input" rows="7" placeholder="[[[1, 2], [3, 4]], [[5, 6], [7, 8]]]">{{ tensor_input|default:'' }}</textarea>
-                    </div>
-
-                    <div class="field-grid">
-                        <div class="field-group">
-                            <label for="tensor_file">Upload Tensor File</label>
-                            <div class="file-upload-wrapper">
-                                <input id="tensor_file" name="tensor_file" type="file">
+                    <div class="config-top-layout">
+                        <!-- Left Column: Tensor Input -->
+                        <div class="config-input-column">
+                            <div class="field-group">
+                                <div class="field-header-row">
+                                    <label for="tensor_input">Tensor Input (JSON Array)</label>
+                                    <span id="random-tensor-feedback" class="random-feedback-badge hidden">✓ Inserted</span>
+                                </div>
+                                <div class="random-tensor-bar">
+                                    <span class="random-bar-label">🎲 Auto Insert:</span>
+                                    <button type="button" class="btn-random-chip" data-shape="3,3,3" title="Auto insert random 3×3×3 3D tensor (27 elements)">3×3×3 (3D)</button>
+                                    <button type="button" class="btn-random-chip" data-shape="4,3,2" title="Auto insert random 4×3×2 3D tensor (24 elements)">4×3×2 (3D)</button>
+                                    <button type="button" class="btn-random-chip" data-shape="2,2,2,2" title="Auto insert random 2×2×2×2 4D tensor (16 elements)">4D (2⁴)</button>
+                                    <button type="button" class="btn-random-chip" data-shape="3,2,3,2" title="Auto insert random 3×2×3×2 4D tensor (36 elements)">4D (3×2×3×2)</button>
+                                </div>
+                                <textarea id="tensor_input" name="tensor_input" rows="8" placeholder="[[[1, 2], [3, 4]], [[5, 6], [7, 8]]]">{{ tensor_input|default:'' }}</textarea>
                             </div>
                         </div>
 
-                        <div class="field-group">
-                            <label for="algorithm">Method / Algorithm</label>
-                            <select id="algorithm" name="algorithm">
-                                <optgroup label="Tensor methods">
-                                    <option value="cp" {% if algorithm == 'cp' %}selected{% endif %}>CP Decomposition</option>
-                                    <option value="tucker" {% if algorithm == 'tucker' %}selected{% endif %}>Tucker Decomposition</option>
-                                    <option value="hosvd" {% if algorithm == 'hosvd' %}selected{% endif %}>HOSVD</option>
-                                    <option value="tensor_train" {% if algorithm == 'tensor_train' %}selected{% endif %}>Tensor Train (TT)</option>
-                                </optgroup>
-                                <optgroup label="PuzzleTensor Augmented Methods (Paper: KDD 2025)">
-                                    <option value="cp_puzzle" {% if algorithm == 'cp_puzzle' or algorithm == 'cp+puzzle' %}selected{% endif %}>CP + PuzzleTensor</option>
-                                    <option value="tucker_puzzle" {% if algorithm == 'tucker_puzzle' or algorithm == 'tucker+puzzle' %}selected{% endif %}>Tucker + PuzzleTensor</option>
-                                    <option value="hosvd_puzzle" {% if algorithm == 'hosvd_puzzle' or algorithm == 'hosvd+puzzle' %}selected{% endif %}>HOSVD + PuzzleTensor</option>
-                                    <option value="tensor_train_puzzle" {% if algorithm == 'tensor_train_puzzle' or algorithm == 'tensor_train+puzzle' %}selected{% endif %}>Tensor Train + PuzzleTensor</option>
-                                </optgroup>
-                            </select>
-                        </div>
-                    </div>
+                        <!-- Right Column: Methods & Controls -->
+                        <div class="config-controls-column">
+                            <div class="field-grid">
+                                <div class="field-group">
+                                    <label for="algorithm">Method / Algorithm</label>
+                                    <select id="algorithm" name="algorithm">
+                                        <optgroup label="Tensor methods">
+                                            <option value="cp" {% if algorithm == 'cp' %}selected{% endif %}>CP Decomposition</option>
+                                            <option value="tucker" {% if algorithm == 'tucker' %}selected{% endif %}>Tucker Decomposition</option>
+                                            <option value="hosvd" {% if algorithm == 'hosvd' %}selected{% endif %}>HOSVD</option>
+                                            <option value="tensor_train" {% if algorithm == 'tensor_train' %}selected{% endif %}>Tensor Train (TT)</option>
+                                        </optgroup>
+                                        <optgroup label="PuzzleTensor Augmented Methods (Paper: KDD 2025)">
+                                            <option value="cp_puzzle" {% if algorithm == 'cp_puzzle' or algorithm == 'cp+puzzle' %}selected{% endif %}>CP + PuzzleTensor</option>
+                                            <option value="tucker_puzzle" {% if algorithm == 'tucker_puzzle' or algorithm == 'tucker+puzzle' %}selected{% endif %}>Tucker + PuzzleTensor</option>
+                                            <option value="hosvd_puzzle" {% if algorithm == 'hosvd_puzzle' or algorithm == 'hosvd+puzzle' %}selected{% endif %}>HOSVD + PuzzleTensor</option>
+                                            <option value="tensor_train_puzzle" {% if algorithm == 'tensor_train_puzzle' or algorithm == 'tensor_train+puzzle' %}selected{% endif %}>Tensor Train + PuzzleTensor</option>
+                                        </optgroup>
+                                    </select>
+                                </div>
 
-                    <div class="action-grid">
-                        <button type="submit" name="action" value="decompose" class="btn btn-primary">Decompose</button>
-                        <button type="submit" name="action" value="visualize" class="btn btn-primary">Visualize</button>
-                        
-                        <button type="submit" name="action" value="benchmark" class="btn btn-primary">Benchmark &amp; Compression</button>
-                        <button type="submit" name="action" value="analyze" class="btn btn-primary">Restruct &amp; Accuracy</button>
-                        
-                        <button type="submit" name="action" value="compare" class="btn btn-compare full-width">Compare All Methods</button>
+                                <div class="field-group">
+                                    <label for="tensor_file">Upload Tensor File</label>
+                                    <div class="file-upload-wrapper">
+                                        <input id="tensor_file" name="tensor_file" type="file">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="action-grid">
+                                <button type="submit" name="action" value="decompose" class="btn btn-primary">Decompose</button>
+                                <button type="submit" name="action" value="visualize" class="btn btn-primary">Visualize</button>
+                                
+                                <button type="submit" name="action" value="benchmark" class="btn btn-primary">Benchmark &amp; Compression</button>
+                                <button type="submit" name="action" value="analyze" class="btn btn-primary">Restruct &amp; Accuracy</button>
+                                
+                                <button type="submit" name="action" value="compare" class="btn btn-compare full-width">Compare All Methods</button>
+                            </div>
+                        </div>
                     </div>
                 </form>
             </section>
 
-            <!-- Right Column: Results & Interactive Output -->
+            <!-- Bottom Section: Results & Interactive Output -->
             <section class="results-column">
                 
                 <!-- Visualization Card (Dynamic SVGs inserted here) -->

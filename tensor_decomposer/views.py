@@ -7,10 +7,17 @@ import time
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 
-from .decomposition import export_result, parse_tensor_input, run_decomposition
-from .services.function.analysis import analyze_decomposition, compare_methods
-from .services.function.benchmark import benchmark_algorithm
-from .services.algorithms import SUPPORTED_ALGORITHMS
+import tensordecomp as td
+from tensordecomp import (
+    SUPPORTED_ALGORITHMS,
+    analyze_decomposition,
+    benchmark_algorithm,
+    compare_methods,
+    parse_tensor_input,
+    run_algorithm,
+)
+
+from .decomposition import export_result, run_decomposition
 
 
 TENSOR_METHODS = ("cp", "tucker", "hosvd", "tensor_train")
