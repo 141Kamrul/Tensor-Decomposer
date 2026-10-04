@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Sequence
 
 import numpy as np
 
@@ -10,73 +10,142 @@ from ...function.tensor_utils import (
     matricization,
     norm,
     pinv,
+    reconstruct_cp,
 )
 from ..matrix.svd import svd
 
 
 def cp(
     array: np.ndarray,
-    rank: int | None = None,
-    max_iter: int = 100,
+    rank: int | Sequence[int] | None = None,
+    ranks: int | Sequence[int] | None = None,
+    max_iter: int = 150,
     tol: float = 1e-7,
 ) -> dict[str, Any]:
+    """CANDECOMP/PARAFAC (CP) Decomposition via Alternating Least Squares (CP-ALS).
 
+    Decomposes an N-way tensor X into a sum of R rank-one component tensors:
+        X ≈ sum_{r=1}^R λ_r (a_r^(1) ∘ a_r^(2) ∘ ... ∘ a_r^(N))
+
+    Args:
+        array: Input tensor as a NumPy array (ndim >= 2).
+        rank: Target CP rank R. Can be an integer or a list/tuple of mode ranks [r_1, ..., r_N].
+        ranks: Alternative alias for rank. Can be an integer or mode ranks for each matrix.
+        max_iter: Maximum number of ALS optimization iterations.
+        tol: Convergence tolerance based on reconstruction relative error.
+
+    Returns:
+        dict containing:
+            - "method": "cp"
+            - "weights": 1D array of component weights λ (length R)
+            - "factors": list of factor matrices [A^(1), ..., A^(N)], shape (I_n, R)
+            - "shape": original tensor shape
+            - "rank": effective CP rank R
+            - "mode_ranks": target rank per mode
+    """
     tensor = as_float_tensor(array)
     if tensor.ndim < 2:
         raise ValueError("CP decomposition requires a tensor with at least 2 dimensions")
 
     ndim = tensor.ndim
-    if rank is None:
-        rank = max(1, min(tensor.shape))
+    tensor_norm = float(norm(tensor))
+    if tensor_norm == 0:
+        tensor_norm = 1.0
 
+    # Fixed minimum and maximum rank bounds for CP
+    min_rank = 1
+    max_rank = max(1, int(np.prod(tensor.shape)))
+
+    target_input = rank if rank is not None else ranks
+    if target_input is None:
+        raw_rank = max(1, min(tensor.shape))
+    elif isinstance(target_input, (int, np.integer)):
+        raw_rank = int(target_input)
+    elif isinstance(target_input, (list, tuple, np.ndarray)) and len(target_input) > 0:
+        # CP requires a single rank R across all factor matrices. Disallow mode-specific ranks.
+        raw_rank = int(target_input[0])
+    else:
+        raw_rank = max(1, min(tensor.shape))
+
+    # Clamp strictly within fixed min and max rank bounds
+    target_rank = max(min_rank, min(raw_rank, max_rank))
+
+    # Initialize factor matrices using SVD of mode unfoldings
     factors: list[np.ndarray] = []
     for mode in range(ndim):
         unfolding = matricization(tensor, mode)
         u = svd(unfolding)["u"]
-        if u.shape[1] < rank:
-            pad = np.random.randn(u.shape[0], rank - u.shape[1]) * 0.1
-            u = np.hstack([u, pad])
-        factors.append(u[:, :rank])
+        avail = min(u.shape[1], target_rank)
+        
+        cols: list[np.ndarray] = []
+        if avail > 0:
+            cols.append(u[:, :avail])
+        
+        # If target_rank > avail, pad with small random noise
+        needed = target_rank - avail
+        if needed > 0:
+            rng = np.random.default_rng(42 + mode)
+            rand_cols = rng.standard_normal((u.shape[0], needed)) * 0.05
+            cols.append(rand_cols)
+            
+        col_mat = np.hstack(cols) if len(cols) > 1 else cols[0]
+        # Normalize columns
+        c_norms = np.linalg.norm(col_mat, axis=0)
+        c_norms[c_norms == 0] = 1.0
+        factors.append(col_mat / c_norms)
 
-    weights = np.ones(rank, dtype=float)
+    weights = np.ones(target_rank, dtype=float)
 
-    # CP-ALS Iterations
-    prev_weight_sum = float("inf")
+    # Track the best possible scenario across ALS iterations
+    best_factors = [f.copy() for f in factors]
+    best_weights = weights.copy()
+    initial_recon = reconstruct_cp(best_weights, best_factors)
+    best_error = float(norm(tensor - initial_recon) / tensor_norm)
+
+    # CP-ALS Iteration Loop
     for _ in range(max_iter):
         for n in range(ndim):
             # Compute V = *_{m != n} (A^(m)^T A^(m))
-            V = np.ones((rank, rank), dtype=float)
+            V = np.ones((target_rank, target_rank), dtype=float)
             for m in range(ndim):
                 if m != n:
                     V *= (factors[m].T @ factors[m])
 
-            # Khatri-Rao product of factor matrices for modes in reverse order excluding n
+            # Khatri-Rao product of factor matrices in reverse order excluding mode n
             mats = [factors[m] for m in range(ndim - 1, -1, -1) if m != n]
             W = khatri_rao(mats)
 
-            # Unfold tensor at mode n
+            # Mode-n unfolding
             X_n = matricization(tensor, n)
 
-            # Solve A_tilde = X_n @ W @ V^\dagger
+            # Solve least-squares: A_tilde = X_n @ W @ pinv(V)
             V_pinv = pinv(V)
             A_tilde = X_n @ W @ V_pinv
 
-            # Normalize columns of A_tilde and absorb norms into weights vector
-            norms = norm(A_tilde, axis=0)
-            norms_clean = np.where(norms == 0, 1.0, norms)
-            weights = norms
-            factors[n] = A_tilde / norms_clean
+            # Normalize columns and update weights
+            col_norms = np.linalg.norm(A_tilde, axis=0)
+            clean_norms = np.where(col_norms == 0, 1.0, col_norms)
+            factors[n] = A_tilde / clean_norms
+            weights = col_norms
 
-        # Check convergence
-        weight_sum = float(np.sum(weights))
-        if abs(prev_weight_sum - weight_sum) < tol:
+        # Check current reconstruction accuracy
+        current_recon = reconstruct_cp(weights, factors)
+        current_error = float(norm(tensor - current_recon) / tensor_norm)
+
+        if current_error < best_error:
+            best_error = current_error
+            best_factors = [f.copy() for f in factors]
+            best_weights = weights.copy()
+
+        if current_error < tol:
             break
-        prev_weight_sum = weight_sum
 
     return {
         "method": "cp",
-        "weights": weights,
-        "factors": factors,
-        "shape": tensor.shape,
-        "rank": rank,
+        "weights": best_weights,
+        "factors": best_factors,
+        "shape": list(tensor.shape),
+        "rank": target_rank,
+        "min_rank": min_rank,
+        "max_rank": max_rank,
     }

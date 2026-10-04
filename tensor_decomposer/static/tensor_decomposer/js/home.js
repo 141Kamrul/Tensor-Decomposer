@@ -84,8 +84,101 @@ document.addEventListener("DOMContentLoaded", () => {
                     feedbackBadge.classList.add("hidden");
                 }, 2200);
             }
+
+            // Trigger ranks hint update for newly inserted tensor shape
+            updateRanksHint();
         });
     });
+
+    // Dynamic placeholder and bounds for ranks_input based on selected algorithm and tensor shape
+    const algoSelect = document.getElementById("algorithm");
+    const ranksInputField = document.getElementById("ranks_input");
+    const ranksHintBadge = document.getElementById("ranks-hint-badge");
+    const rankBoundsInfo = document.getElementById("rank-bounds-info");
+
+    function getTensorShapeFromInput() {
+        if (!inputTextArea) return [];
+        const text = inputTextArea.value.trim();
+        if (!text) return [];
+        try {
+            const arr = JSON.parse(text);
+            const shape = [];
+            let cur = arr;
+            while (Array.isArray(cur) && cur.length > 0) {
+                shape.push(cur.length);
+                cur = cur[0];
+            }
+            return shape;
+        } catch {
+            return [];
+        }
+    }
+
+    function updateRanksHint() {
+        if (!algoSelect || !ranksInputField || !ranksHintBadge) return;
+        const algo = algoSelect.value.toLowerCase();
+        const shape = getTensorShapeFromInput();
+        const shapeStr = shape.length ? shape.join("×") : "";
+
+        if (algo.startsWith("cp")) {
+            ranksHintBadge.textContent = "Rank R (Single integer)";
+            const maxR = shape.length ? Math.min(50, shape.reduce((a, b) => a * b, 1)) : 50;
+            ranksInputField.placeholder = `Single scalar R (Min: 1, Max: ${maxR})`;
+            if (rankBoundsInfo) {
+                const shapeText = shape.length ? `for ${shapeStr} tensor` : "";
+                rankBoundsInfo.textContent = `CP requires a single rank R across all factor matrices. Fixed bounds ${shapeText}: Min = 1, Max = ${maxR}.`;
+            }
+        } else if (algo.startsWith("tensor_train")) {
+            ranksHintBadge.textContent = "TT-ranks (Interior bonds)";
+            if (shape.length >= 2) {
+                const bondLimits = [];
+                for (let k = 0; k < shape.length - 1; k++) {
+                    const leftProd = shape.slice(0, k + 1).reduce((a, b) => a * b, 1);
+                    const rightProd = shape.slice(k + 1).reduce((a, b) => a * b, 1);
+                    bondLimits.push(Math.min(leftProd, rightProd));
+                }
+                const maxStr = `[${bondLimits.join(", ")}]`;
+                const egStr = bondLimits.map(v => Math.min(2, v)).join(", ");
+                ranksInputField.placeholder = `e.g. ${egStr} (Min: 1, Max: ${maxStr})`;
+                if (rankBoundsInfo) {
+                    rankBoundsInfo.textContent = `Fixed bounds for TT interior bonds (${shapeStr}): Min = 1, Max per bond = ${maxStr}.`;
+                }
+            } else {
+                ranksInputField.placeholder = "e.g. 2, 2 (Min: 1 per bond)";
+                if (rankBoundsInfo) {
+                    rankBoundsInfo.textContent = "Fixed bounds for TT interior bonds: Min = 1, Max = unfolding rank.";
+                }
+            }
+        } else if (algo.startsWith("tucker") || algo.startsWith("hosvd")) {
+            const label = algo.startsWith("hosvd") ? "HOSVD" : "Tucker";
+            ranksHintBadge.textContent = `Multilinear [R1..R${shape.length || 'D'}]`;
+            if (shape.length > 0) {
+                const maxStr = `[${shape.join(", ")}]`;
+                const egStr = shape.map(v => Math.min(2, v)).join(", ");
+                ranksInputField.placeholder = `e.g. ${egStr} (Min: 1, Max: ${maxStr})`;
+                if (rankBoundsInfo) {
+                    rankBoundsInfo.textContent = `Fixed bounds for ${label} (${shapeStr}): Min = 1, Max per mode = ${maxStr}.`;
+                }
+            } else {
+                ranksInputField.placeholder = "e.g. 2, 3, 2 (Min: 1 per mode)";
+                if (rankBoundsInfo) {
+                    rankBoundsInfo.textContent = `Fixed bounds for ${label}: Min = 1, Max = mode size.`;
+                }
+            }
+        } else {
+            ranksHintBadge.textContent = "Auto";
+            ranksInputField.placeholder = "e.g. 2";
+            if (rankBoundsInfo) rankBoundsInfo.textContent = "";
+        }
+    }
+
+    if (algoSelect) {
+        algoSelect.addEventListener("change", updateRanksHint);
+    }
+    if (inputTextArea) {
+        inputTextArea.addEventListener("input", updateRanksHint);
+    }
+    updateRanksHint();
 
     // Panel elements
     const panelError = document.getElementById("panel-error");
@@ -110,7 +203,8 @@ document.addEventListener("DOMContentLoaded", () => {
     let lastInputState = {
         tensorInput: "",
         tensorFile: "",
-        algorithm: ""
+        algorithm: "",
+        ranksInput: ""
     };
     let cachedDecomp = null;
 
@@ -129,6 +223,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Simple client-side validation
         const tensorInput = document.getElementById("tensor_input").value.trim();
         const tensorFile = document.getElementById("tensor_file").files[0];
+        const ranksInput = document.getElementById("ranks_input") ? document.getElementById("ranks_input").value.trim() : "";
         
         if (!tensorInput && !tensorFile) {
             showError("Please enter a tensor manually or upload a tensor file.");
@@ -138,13 +233,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const currentInputState = {
             tensorInput: tensorInput,
             tensorFile: tensorFile ? tensorFile.name : "",
-            algorithm: document.getElementById("algorithm").value
+            algorithm: document.getElementById("algorithm").value,
+            ranksInput: ranksInput
         };
 
         const inputChanged = 
             currentInputState.tensorInput !== lastInputState.tensorInput ||
             currentInputState.tensorFile !== lastInputState.tensorFile ||
-            currentInputState.algorithm !== lastInputState.algorithm;
+            currentInputState.algorithm !== lastInputState.algorithm ||
+            currentInputState.ranksInput !== lastInputState.ranksInput;
 
         if (inputChanged) {
             hideAllPanels();

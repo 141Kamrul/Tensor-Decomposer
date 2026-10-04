@@ -17,40 +17,54 @@ def estimate_flops(shape: tuple[int, ...], algorithm: str, last_result: dict[str
     base_algo = algorithm.lower().replace("+", "_").replace("_puzzle", "")
 
     if len(shape) >= 3:
-        n1, n2, n3 = shape[0], shape[1], shape[2]
+        ndim = len(shape)
+        prod_N = int(np.prod(shape))
         if base_algo == "tensor_train":
-            r1, r2 = 1, 1
-            if last_result and "cores" in last_result:
-                try:
-                    cores = last_result["cores"]
-                    r1 = np.array(cores[0]).shape[2]
-                    r2 = np.array(cores[1]).shape[2]
-                except Exception:
-                    pass
-            return svd_flops(n1, n2 * n3) + svd_flops(r1 * n2, n3)
+            total_flops = 0
+            r_prev = 1
+            for k in range(ndim - 1):
+                m_k = r_prev * shape[k]
+                n_k = int(np.prod(shape[k + 1 :]))
+                total_flops += svd_flops(m_k, n_k)
+                rk = 2
+                if last_result and "cores" in last_result:
+                    try:
+                        rk = np.array(last_result["cores"][k]).shape[2]
+                    except Exception:
+                        pass
+                r_prev = rk
+            return total_flops
         elif base_algo in ("tucker", "hosvd"):
-            r1, r2, r3 = n1, n2, n3
+            total_svd_flops = sum(
+                svd_flops(shape[m], prod_N // shape[m])
+                for m in range(ndim)
+            )
+            core_ranks = list(shape)
             if last_result and "core" in last_result:
                 try:
-                    c_shape = np.array(last_result["core"]).shape
-                    r1, r2, r3 = c_shape[0], c_shape[1], c_shape[2]
+                    core_ranks = list(np.array(last_result["core"]).shape)
                 except Exception:
                     pass
-            return (
-                svd_flops(n1, n2 * n3) +
-                svd_flops(n2, n1 * n3) +
-                svd_flops(n3, n1 * n2) +
-                2 * n1 * n2 * n3 * (r1 + r2 + r3)
-            )
+            elif last_result and "ranks" in last_result:
+                try:
+                    core_ranks = list(last_result["ranks"])
+                except Exception:
+                    pass
+            projection_flops = 2 * prod_N * sum(core_ranks)
+            return total_svd_flops + projection_flops
         elif base_algo == "cp":
-            R = 5
+            R = 3
             if last_result and "factors" in last_result:
                 try:
-                    factors = last_result["factors"]
-                    R = np.array(factors[0]).shape[1]
+                    R = int(np.array(last_result["factors"][0]).shape[1])
                 except Exception:
                     pass
-            return 50 * (6 * n1 * n2 * n3 * R + 3 * (n1 + n2 + n3) * (R**2) + 3 * (R**3))
+            elif last_result and "rank" in last_result:
+                try:
+                    R = int(last_result["rank"])
+                except Exception:
+                    pass
+            return 50 * (2 * ndim * prod_N * R + sum(shape) * (R**2) + ndim * (R**3))
     else:
         m = shape[0]
         n = shape[1] if len(shape) > 1 else 1
@@ -75,11 +89,11 @@ def get_complexity_formula(shape: tuple[int, ...], algorithm: str) -> str:
 
     if len(shape) >= 3:
         if base_algo == "tensor_train":
-            return f"O(N₁N₂N₃R){suffix}"
+            return f"O((∏ N_i) • R){suffix}"
         elif base_algo in ("tucker", "hosvd"):
-            return f"O(N₁N₂N₃(∑R_i) + ∑SVD_i){suffix}"
+            return f"O((∏ N_i) • (∑ R_i) + ∑ SVD_i){suffix}"
         elif base_algo == "cp":
-            return f"O(N₁N₂N₃R • Iterations){suffix}"
+            return f"O((∏ N_i) • R • Iterations){suffix}"
     else:
         if base_algo == "svd":
             return "O(4M²N + 8MN² + 9N³)"
@@ -89,7 +103,7 @@ def get_complexity_formula(shape: tuple[int, ...], algorithm: str) -> str:
             return "O(2/3 N³ + N²(M-N))"
         elif base_algo == "eigendecomposition":
             return "O(9 N³)"
-    return f"O(N){suffix}"
+    return f"O((∏ N_i)){suffix}"
 
 
 def benchmark_algorithm(array: np.ndarray, algorithm: str, repeats: int = 1) -> dict[str, Any]:

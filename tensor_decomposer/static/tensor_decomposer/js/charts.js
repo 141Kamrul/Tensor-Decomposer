@@ -256,21 +256,15 @@ export function createEquationSVG(algorithm, result, inputTensor) {
             const cx = startX + (idx + 0.5) * slotWidth;
             const cy = 175;
 
-            let h = s(nK), w = s(rNext), d = s(rPrev);
-            if (idx === 0) {
-                h = s(nK);
-                w = s(rNext);
-                d = 0;
-            } else if (idx === numCores - 1) {
-                h = s(rPrev);
-                w = 0;
-                d = s(nK);
-            }
+            // Requirement 3: Every core in TT is a 3-mode tensor (rPrev × nK × rNext)
+            const h = s(nK);
+            const w = Math.max(16, s(rNext));
+            const d = Math.max(16, s(rPrev));
 
             const color = idx % 2 === 0 ? "#ec4899" : "#8b5cf6";
             const coreGroup = createIsometricBlock(
                 svgns, cx, cy, h, w, d, color, `Core ${idx + 1}`,
-                { h: nK, w: rNext > 1 ? rNext : "", d: rPrev > 1 ? rPrev : "" }
+                { h: nK, w: rNext, d: rPrev }
             );
             svg.appendChild(coreGroup);
 
@@ -287,24 +281,84 @@ export function createEquationSVG(algorithm, result, inputTensor) {
 
         return svg;
     }
+
+    // Requirement 2: CP Decomposition outputs NO tensor, only factor matrices!
+    if (baseAlgo === "cp" && result.factors && Array.isArray(result.factors) && result.factors.length > 0) {
+        const factors = result.factors;
+        const numFactors = factors.length;
+        const R = result.rank || (factors[0][0] ? factors[0][0].length : factors[0].length) || 1;
+
+        // Collect dimensions to scale proportionally
+        const allDims = [...shape, R];
+        factors.forEach(f => {
+            const fs = getTensorShape(f);
+            allDims.push(...fs);
+        });
+        const maxDim = Math.max(...allDims.filter(v => typeof v === 'number' && !isNaN(v)), 1);
+        const s = (val) => Math.max(14, Math.min(85, (val / maxDim) * 90));
+
+        // Draw input tensor X on the left
+        const H_x = s(shape[0] || 1);
+        const W_x = s(shape[1] || 1);
+        const D_x = shape.length >= 3 ? s(shape[2] || 1) : 0;
+        const x0_x = 120, y0_x = 175;
+        const inputGroup = createIsometricBlock(
+            svgns, x0_x, y0_x, H_x, W_x, D_x, "#06b6d4", "X", 
+            { h: shape[0], w: shape[1], d: shape.length >= 3 ? shape.slice(2).join("×") : "" }
+        );
+        svg.appendChild(inputGroup);
+        svg.appendChild(drawTextLabel(svgns, x0_x, 265, `Shape: ${shape.join("×")}`, "10"));
+
+        // Approx sign
+        svg.appendChild(drawTextLabel(svgns, 215, 175, "≈", "28", "bold"));
+
+        // Dynamically space factor matrices across canvas width 250 -> 780
+        const startX = 250;
+        const endX = 780;
+        const slotWidth = (endX - startX) / numFactors;
+
+        factors.forEach((factor, idx) => {
+            const fShape = getTensorShape(factor);
+            const rows = fShape[0] || shape[idx] || 1;
+            const cols = fShape[1] || R;
+
+            const cx = startX + (idx + 0.5) * slotWidth;
+            const cy = 175;
+
+            const H_m = s(rows);
+            const W_m = s(cols);
+
+            // Draw as 2D matrix (d = 0 means flat matrix, no 3D tensor volume)
+            const color = idx % 2 === 0 ? "#ec4899" : "#a855f7";
+            const matrixGroup = createIsometricBlock(
+                svgns, cx, cy, H_m, W_m, 0, color, `A(${idx + 1})`,
+                { h: rows, w: cols }
+            );
+            svg.appendChild(matrixGroup);
+
+            // Dimension label under each matrix: I_d × R
+            const dimLabel = `${rows} × ${cols}`;
+            svg.appendChild(drawTextLabel(svgns, cx, 265, dimLabel, "10"));
+
+            // Outer product symbol ∘ between factor matrices
+            if (idx < numFactors - 1) {
+                const symX = startX + (idx + 1) * slotWidth;
+                svg.appendChild(drawTextLabel(svgns, symX, 175, "∘", "20", "bold"));
+            }
+        });
+
+        return svg;
+    }
     
     if (shape.length >= 3) {
         const n1 = shape[0], n2 = shape[1], n3 = shape[2];
         let r1 = n1, r2 = n2, r3 = n3;
-        let R = 1;
-        
-        if (baseAlgo === "cp") {
-            if (result.factors && result.factors[0]) {
-                R = result.factors[0][0].length || result.factors[0].length;
-            }
-            r1 = R; r2 = R; r3 = R;
-        } else if (baseAlgo === "tucker" || baseAlgo === "hosvd") {
-            if (result.core) {
-                const coreShape = getTensorShape(result.core);
-                r1 = coreShape[0] || r1;
-                r2 = coreShape[1] || r2;
-                r3 = coreShape[2] || r3;
-            }
+
+        if (result.core) {
+            const coreShape = getTensorShape(result.core);
+            r1 = coreShape[0] || r1;
+            r2 = coreShape[1] || r2;
+            r3 = coreShape[2] || r3;
         }
 
         const maxDim = Math.max(n1, n2, n3, r1, r2, r3);
@@ -320,7 +374,7 @@ export function createEquationSVG(algorithm, result, inputTensor) {
         const x_c = 550, y_c = 180;
         const H_g = s(r1), W_g = s(r2), D_g = s(r3);
         
-        const coreLabel = baseAlgo === "cp" ? "λ" : "G";
+        const coreLabel = "G";
         const coreGroup = createIsometricBlock(svgns, x_c, y_c, H_g, W_g, D_g, "#8b5cf6", coreLabel, { h: r1, w: r2, d: r3 });
         svg.appendChild(coreGroup);
 

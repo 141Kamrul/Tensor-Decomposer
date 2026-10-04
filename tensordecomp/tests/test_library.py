@@ -97,3 +97,63 @@ def test_compare_methods():
         assert "compression_ratio" in row
         assert "relative_error" in row
         assert "execution_time_ms" in row
+
+
+def test_mode_and_multilinear_ranks():
+    tensor = np.arange(24, dtype=float).reshape(2, 3, 4)
+
+    # 1. CP with single scalar rank and bounds
+    cp_res1 = td.cp(tensor, rank=3)
+    assert cp_res1["rank"] == 3
+    assert cp_res1["min_rank"] == 1
+    assert cp_res1["max_rank"] == 24
+    for f in cp_res1["factors"]:
+        assert f.shape[1] == 3
+
+    # CP disallows multiple mode ranks and enforces single rank R
+    cp_res2 = td.cp(tensor, ranks=[2, 3, 2])
+    assert cp_res2["rank"] == 2
+    assert len(cp_res2["factors"]) == 3
+    for f in cp_res2["factors"]:
+        assert f.shape[1] == 2
+
+    # 2. Tucker with multilinear ranks and fixed mode bounds
+    tucker_res1 = td.tucker(tensor, ranks=[2, 2, 3])
+    assert tucker_res1["ranks"] == [2, 2, 3]
+    assert tucker_res1["min_ranks"] == [1, 1, 1]
+    assert tucker_res1["max_ranks"] == [2, 3, 4]
+    assert tucker_res1["core"].shape == (2, 2, 3)
+    tucker_res2 = td.tucker(tensor, ranks=2)
+    assert tucker_res2["ranks"] == [2, 2, 2]
+
+    # 3. HOSVD with multilinear ranks and fixed mode bounds
+    hosvd_res = td.hosvd(tensor, ranks=[2, 2, 2])
+    assert hosvd_res["ranks"] == [2, 2, 2]
+    assert hosvd_res["min_ranks"] == [1, 1, 1]
+    assert hosvd_res["max_ranks"] == [2, 3, 4]
+    assert hosvd_res["core"].shape == (2, 2, 2)
+
+    # 4. TT with TT-ranks and fixed bond bounds
+    tt_res = td.tensor_train(tensor, ranks=[2, 2])
+    assert tt_res["ranks"] == [1, 2, 2, 1]
+    assert tt_res["min_ranks"] == [1, 1]
+    assert tt_res["max_ranks"] == [2, 4]  # min(2, 12) = 2, min(6, 4) = 4
+    assert len(tt_res["cores"]) == 3
+    for core in tt_res["cores"]:
+        assert core.ndim == 3
+
+
+def test_complexity_formula_product_of_n():
+    shape = (2, 3, 4)
+    cp_c = td.get_complexity_formula(shape, "cp")
+    assert "∏ N_i" in cp_c
+    assert "N₁N₂N₃" not in cp_c
+
+    tt_c = td.get_complexity_formula(shape, "tensor_train")
+    assert "∏ N_i" in tt_c
+    assert "N₁N₂N₃" not in tt_c
+
+    tucker_c = td.get_complexity_formula(shape, "tucker")
+    assert "∏ N_i" in tucker_c
+    assert "N₁N₂N₃" not in tucker_c
+

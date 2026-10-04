@@ -127,6 +127,15 @@
                                 </div>
 
                                 <div class="field-group">
+                                    <div class="field-header-row">
+                                        <label for="ranks_input">Target Ranks (Optional)</label>
+                                        <span class="ranks-hint-badge" id="ranks-hint-badge">Auto</span>
+                                    </div>
+                                    <input type="text" id="ranks_input" name="ranks_input" placeholder="e.g. 2 (CP) | 2, 3, 2 (Tucker/HOSVD) | 2, 2 (TT)" value="{{ ranks_input|default:'' }}">
+                                    <div class="rank-bounds-info" id="rank-bounds-info"></div>
+                                </div>
+
+                                <div class="field-group">
                                     <label for="tensor_file">Upload Tensor File</label>
                                     <div class="file-upload-wrapper">
                                         <input id="tensor_file" name="tensor_file" type="file">

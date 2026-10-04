@@ -23,7 +23,11 @@ from .function.analysis import (
     compare_methods,
     reconstruct_tensor,
 )
-from .function.benchmark import benchmark_algorithm
+from .function.benchmark import (
+    benchmark_algorithm,
+    estimate_flops,
+    get_complexity_formula,
+)
 from .function.puzzle_tensor import (
     invert_puzzle_tensor,
     puzzle_tensor,
@@ -57,6 +61,8 @@ __all__ = [
     "cp",
     "cp_puzzle",
     "eigendecomposition",
+    "estimate_flops",
+    "get_complexity_formula",
     "hosvd",
     "hosvd_puzzle",
     "invert_puzzle_tensor",

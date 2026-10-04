@@ -60,10 +60,28 @@ def _json_default(value: object) -> object:
     raise TypeError(f"Object of type {type(value).__name__} is not JSON serializable")
 
 
-def _build_base_context(tensor: object | None, algorithm: str, action: str) -> dict[str, object]:
+def parse_ranks_input(raw_ranks: str) -> int | list[int] | None:
+    text = (raw_ranks or "").strip()
+    if not text:
+        return None
+    cleaned = text.strip("[](){}")
+    tokens = [t.strip() for t in cleaned.replace(",", " ").split() if t.strip()]
+    if not tokens:
+        return None
+    try:
+        nums = [int(t) for t in tokens]
+        if len(nums) == 1:
+            return nums[0]
+        return nums
+    except ValueError:
+        return None
+
+
+def _build_base_context(tensor: object | None, algorithm: str, action: str, ranks_input: str = "") -> dict[str, object]:
     context: dict[str, object] = {
         "algorithm": algorithm,
         "action": action,
+        "ranks_input": ranks_input,
         "algorithm_options": SUPPORTED_ALGORITHMS,
         "algorithm_labels": ALGORITHM_LABELS,
         "tensor_methods": TENSOR_METHODS,
@@ -80,7 +98,20 @@ def home(request: HttpRequest) -> HttpResponse:
         raw_tensor = request.POST.get("tensor_input", "")
         algorithm = request.POST.get("algorithm", "cp")
         action = request.POST.get("action", "decompose")
+        ranks_input = request.POST.get("ranks_input", "")
         uploaded_file = request.FILES.get("tensor_file")
+
+        parsed_ranks = parse_ranks_input(ranks_input)
+        base_algo = (algorithm or "").lower().replace("+", "_").replace("_puzzle", "")
+        # CP requires a single scalar rank R. If a list of mode ranks was entered, extract the single rank integer
+        if base_algo == "cp" and parsed_ranks is not None:
+            if isinstance(parsed_ranks, list) and len(parsed_ranks) > 0:
+                parsed_ranks = parsed_ranks[0]
+
+        algo_kwargs: dict[str, Any] = {}
+        if parsed_ranks is not None:
+            algo_kwargs["ranks"] = parsed_ranks
+            algo_kwargs["rank"] = parsed_ranks
 
         try:
             if uploaded_file is not None:
@@ -89,9 +120,9 @@ def home(request: HttpRequest) -> HttpResponse:
             tensor_data = tensor.tolist()
 
             if action == "benchmark":
-                benchmark = benchmark_algorithm(tensor, algorithm)
+                benchmark = benchmark_algorithm(tensor, algorithm, **algo_kwargs)
                 export_path = export_result({"tensor": tensor_data, "benchmark": benchmark}, output_dir=Path("results"))
-                context = _build_base_context(tensor_data, algorithm, action)
+                context = _build_base_context(tensor_data, algorithm, action, ranks_input=ranks_input)
                 context.update(
                     {
                         "benchmark": benchmark,
@@ -107,7 +138,7 @@ def home(request: HttpRequest) -> HttpResponse:
                 methods_to_compare = TENSOR_METHODS + PUZZLE_METHODS
                 comparison = compare_methods(tensor, methods_to_compare)
                 export_path = export_result({"tensor": tensor_data, "comparison": comparison}, output_dir=Path("results"))
-                context = _build_base_context(tensor_data, algorithm, action)
+                context = _build_base_context(tensor_data, algorithm, action, ranks_input=ranks_input)
                 context.update(
                     {
                         "comparison": comparison,
@@ -119,7 +150,7 @@ def home(request: HttpRequest) -> HttpResponse:
                     return HttpResponse(json.dumps(context, default=_json_default), content_type="application/json")
                 return render(request, "home.html", context)
 
-            result = run_decomposition(tensor, algorithm)
+            result = run_decomposition(tensor, algorithm, **algo_kwargs)
             analysis = analyze_decomposition(tensor, algorithm, result)
             
             source_name = Path(uploaded_file.name).stem if uploaded_file else "manual"
@@ -137,7 +168,7 @@ def home(request: HttpRequest) -> HttpResponse:
                 filename=export_filename,
                 output_dir=Path("results"),
             )
-            context = _build_base_context(tensor_data, algorithm, action)
+            context = _build_base_context(tensor_data, algorithm, action, ranks_input=ranks_input)
             context.update(
                 {
                     "result": result,

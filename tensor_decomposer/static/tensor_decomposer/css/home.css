@@ -466,7 +466,7 @@ body {
 }
 
 /* Form Inputs */
-textarea, select, input[type="file"] {
+textarea, select, input[type="file"], input[type="text"] {
     width: 100%;
     background-color: var(--input-bg);
     border: 1px solid var(--input-border);
@@ -478,16 +478,41 @@ textarea, select, input[type="file"] {
     transition: all 0.3s ease;
 }
 
+input[type="text"] {
+    font-family: 'Fira Code', monospace;
+    font-size: 0.88rem;
+}
+
 textarea {
     resize: vertical;
     font-family: 'Fira Code', monospace;
     font-size: 0.85rem;
 }
 
-textarea:focus, select:focus {
+textarea:focus, select:focus, input[type="text"]:focus {
     outline: none;
     border-color: var(--accent-indigo);
     box-shadow: 0 0 15px rgba(99, 102, 241, 0.25);
+}
+
+.ranks-hint-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--accent-indigo, #818cf8);
+    background: rgba(99, 102, 241, 0.12);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+    border-radius: 999px;
+    padding: 0.12rem 0.55rem;
+    letter-spacing: 0.02em;
+}
+
+.rank-bounds-info {
+    font-size: 0.73rem;
+    color: #94a3b8;
+    margin-top: 0.35rem;
+    line-height: 1.35;
+    font-weight: 500;
+    display: block;
 }
 
 .field-grid {
