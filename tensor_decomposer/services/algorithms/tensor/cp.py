@@ -50,22 +50,29 @@ def cp(
                 if m != n:
                     V *= (factors[m].T @ factors[m])
 
-            # Khatri-Rao product of factor matrices for modes in reverse order excluding n
-            mats = [factors[m] for m in range(ndim - 1, -1, -1) if m != n]
+            # Khatri-Rao product of factor matrices for modes in ascending order excluding n
+            mats = [factors[m] for m in range(ndim) if m != n]
             W = khatri_rao(mats)
 
             # Unfold tensor at mode n
             X_n = matricization(tensor, n)
+            mttkrp = X_n @ W
 
-            # Solve A_tilde = X_n @ W @ V^\dagger
-            V_pinv = pinv(V)
-            A_tilde = X_n @ W @ V_pinv
+            # Solve A_tilde = MTTKRP @ inv(V)
+            try:
+                A_tilde = np.linalg.solve(V + 1e-12 * np.eye(rank), mttkrp.T).T
+            except np.linalg.LinAlgError:
+                A_tilde = mttkrp @ pinv(V)
 
-            # Normalize columns of A_tilde and absorb norms into weights vector
-            norms = norm(A_tilde, axis=0)
-            norms_clean = np.where(norms == 0, 1.0, norms)
-            weights = norms
-            factors[n] = A_tilde / norms_clean
+            # Normalize columns and update weights
+            if n < ndim - 1:
+                norms = norm(A_tilde, axis=0)
+                norms_clean = np.where(norms == 0, 1.0, norms)
+                factors[n] = A_tilde / norms_clean
+            else:
+                weights = norm(A_tilde, axis=0)
+                norms_clean = np.where(weights == 0, 1.0, weights)
+                factors[n] = A_tilde / norms_clean
 
         # Check convergence
         weight_sum = float(np.sum(weights))

@@ -19,7 +19,7 @@ def cp(
     array: np.ndarray,
     rank: int | Sequence[int] | None = None,
     ranks: int | Sequence[int] | None = None,
-    max_iter: int = 150,
+    max_iter: int = 100,
     tol: float = 1e-7,
 ) -> dict[str, Any]:
     """CANDECOMP/PARAFAC (CP) Decomposition via Alternating Least Squares (CP-ALS).
@@ -111,22 +111,31 @@ def cp(
                 if m != n:
                     V *= (factors[m].T @ factors[m])
 
-            # Khatri-Rao product of factor matrices in reverse order excluding mode n
-            mats = [factors[m] for m in range(ndim - 1, -1, -1) if m != n]
+            # Khatri-Rao product of factor matrices in ascending order excluding mode n
+            mats = [factors[m] for m in range(ndim) if m != n]
             W = khatri_rao(mats)
 
             # Mode-n unfolding
             X_n = matricization(tensor, n)
+            mttkrp = X_n @ W
 
-            # Solve least-squares: A_tilde = X_n @ W @ pinv(V)
-            V_pinv = pinv(V)
-            A_tilde = X_n @ W @ V_pinv
+            # Solve least-squares: A_tilde = MTTKRP @ inv(V)
+            try:
+                A_tilde = np.linalg.solve(V + 1e-12 * np.eye(target_rank), mttkrp.T).T
+            except np.linalg.LinAlgError:
+                A_tilde = mttkrp @ pinv(V)
 
-            # Normalize columns and update weights
-            col_norms = np.linalg.norm(A_tilde, axis=0)
-            clean_norms = np.where(col_norms == 0, 1.0, col_norms)
-            factors[n] = A_tilde / clean_norms
-            weights = col_norms
+            # Normalize columns and update weights:
+            # Modes 0 .. ndim-2 are normalized to unit column norm;
+            # the final mode ndim-1 absorbs the column scales into weights.
+            if n < ndim - 1:
+                col_norms = np.linalg.norm(A_tilde, axis=0)
+                clean_norms = np.where(col_norms == 0, 1.0, col_norms)
+                factors[n] = A_tilde / clean_norms
+            else:
+                weights = np.linalg.norm(A_tilde, axis=0)
+                clean_norms = np.where(weights == 0, 1.0, weights)
+                factors[n] = A_tilde / clean_norms
 
         # Check current reconstruction accuracy
         current_recon = reconstruct_cp(weights, factors)
