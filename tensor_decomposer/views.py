@@ -167,6 +167,13 @@ def home(request: HttpRequest) -> HttpResponse:
                 filename=export_filename,
                 output_dir=Path("results"),
             )
+            recon_filename = f"reconstructed_{algorithm}_{source_name}.json"
+            recon_export_path = export_result(
+                analysis.get("reconstructed_tensor", tensor_data),
+                filename=recon_filename,
+                output_dir=Path("results"),
+            )
+
             context = _build_base_context(tensor_data, algorithm, action, ranks_input=ranks_input)
             context.update(
                 {
@@ -174,7 +181,9 @@ def home(request: HttpRequest) -> HttpResponse:
                     "result_json": _pretty_json(result),
                     "analysis": analysis,
                     "analysis_json": _pretty_json(analysis),
+                    "tensor_json": _pretty_json(tensor_data),
                     "download_url": export_path.name,
+                    "recon_download_url": recon_export_path.name,
                 }
             )
             if request.headers.get("x-requested-with") == "XMLHttpRequest":

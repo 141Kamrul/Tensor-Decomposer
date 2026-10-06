@@ -350,6 +350,97 @@ export function createEquationSVG(algorithm, result, inputTensor) {
         return svg;
     }
     
+    // Dynamic handling for Tucker & HOSVD across any number of dimensions (2D, 3D, 4D, N-D)
+    if ((baseAlgo === "tucker" || baseAlgo === "hosvd") && result.core && result.factors && Array.isArray(result.factors) && result.factors.length > 0) {
+        const factors = result.factors;
+        const numFactors = factors.length;
+        const core = result.core;
+        const coreShape = getTensorShape(core);
+
+        // Collect all dimensions to establish global proportional scale
+        const allDims = [...shape, ...coreShape];
+        factors.forEach(f => {
+            const fs = getTensorShape(f);
+            allDims.push(...fs);
+        });
+        const maxDim = Math.max(...allDims.filter(v => typeof v === 'number' && !isNaN(v)), 1);
+        const s = (val) => Math.max(14, Math.min(80, (val / maxDim) * 85));
+
+        // Dynamic total width to prevent cramping with many factor matrices
+        const totalElements = 1 + numFactors; // 1 Core + N factor matrices
+        const totalWidth = Math.max(820, 240 + totalElements * 125);
+        svg.setAttribute("viewBox", `0 0 ${totalWidth} 350`);
+
+        // Draw input tensor X on the left
+        const H_x = s(shape[0] || 1);
+        const W_x = s(shape[1] || 1);
+        const D_x = shape.length >= 3 ? s(shape[2] || 1) : 0;
+        const x0_x = 110, y0_x = 175;
+        const inputGroup = createIsometricBlock(
+            svgns, x0_x, y0_x, H_x, W_x, D_x, "#06b6d4", "X", 
+            { h: shape[0], w: shape[1], d: shape.length >= 3 ? shape.slice(2).join("×") : "" }
+        );
+        svg.appendChild(inputGroup);
+        svg.appendChild(drawTextLabel(svgns, x0_x, 265, `Shape: ${shape.join("×")}`, "10"));
+
+        // Approx sign
+        svg.appendChild(drawTextLabel(svgns, 200, 175, "≈", "28", "bold"));
+
+        // Slot spacing across canvas width 230 -> (totalWidth - 40)
+        const startX = 230;
+        const endX = totalWidth - 40;
+        const slotWidth = (endX - startX) / totalElements;
+
+        // 1. Draw Core Tensor G at slot 0
+        const cx_core = startX + 0.5 * slotWidth;
+        const cy_core = 175;
+        const H_g = s(coreShape[0] || 1);
+        const W_g = Math.max(16, s(coreShape[1] || 1));
+        const D_g = coreShape.length >= 3 ? Math.max(16, s(coreShape[2] || 1)) : 0;
+        const coreGroup = createIsometricBlock(
+            svgns, cx_core, cy_core, H_g, W_g, D_g, "#8b5cf6", "G",
+            { h: coreShape[0], w: coreShape[1], d: coreShape.length >= 3 ? coreShape.slice(2).join("×") : "" }
+        );
+        svg.appendChild(coreGroup);
+        svg.appendChild(drawTextLabel(svgns, cx_core, 265, `Core: ${coreShape.join("×")}`, "10"));
+
+        // Mode product subscript helper
+        const subDigits = ["₀", "₁", "₂", "₃", "₄", "₅", "₆", "₇", "₈", "₉"];
+        const toSubscript = (n) => String(n).split("").map(d => subDigits[d] || d).join("");
+
+        // 2. Draw each Factor Matrix A(k) at slot (k + 1)
+        factors.forEach((factor, idx) => {
+            const fShape = getTensorShape(factor);
+            const rows = fShape[0] || shape[idx] || 1;
+            const cols = fShape[1] || coreShape[idx] || 1;
+
+            const modeNum = idx + 1;
+            const cx = startX + (idx + 1 + 0.5) * slotWidth;
+            const cy = 175;
+
+            // Mode product symbol between previous component and this factor matrix
+            const symX = startX + (idx + 1) * slotWidth;
+            svg.appendChild(drawTextLabel(svgns, symX, 175, `×${toSubscript(modeNum)}`, "15", "bold"));
+
+            // Matrix dimensions
+            const H_m = s(rows);
+            const W_m = s(cols);
+
+            const color = idx % 2 === 0 ? "#ec4899" : "#a855f7";
+            const matrixGroup = createIsometricBlock(
+                svgns, cx, cy, H_m, W_m, 0, color, `A(${modeNum})`,
+                { h: rows, w: cols }
+            );
+            svg.appendChild(matrixGroup);
+
+            // Dimension label: I_k × R_k
+            const dimLabel = `${rows} × ${cols}`;
+            svg.appendChild(drawTextLabel(svgns, cx, 265, dimLabel, "10"));
+        });
+
+        return svg;
+    }
+
     if (shape.length >= 3) {
         const n1 = shape[0], n2 = shape[1], n3 = shape[2];
         let r1 = n1, r2 = n2, r3 = n3;
@@ -395,6 +486,7 @@ export function createEquationSVG(algorithm, result, inputTensor) {
         const y0_a3 = y_c + 0.5 * D_g - 20;
         const a3Group = createIsometricBlock(svgns, x0_a3, y0_a3, H_a3, 0, D_a3, "#ec4899", "A(3)", { h: r3, d: n3 });
         svg.appendChild(a3Group);
+        return svg;
     } else {
         const n1 = shape[0] || 1;
         const n2 = shape[1] || 1;

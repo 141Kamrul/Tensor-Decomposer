@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,12 +9,14 @@
     <!-- Google Fonts for Premium Typography -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap" rel="stylesheet">
-    
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;600;700;800&display=swap"
+        rel="stylesheet">
+
     <link rel="stylesheet" href="{% static 'tensor_decomposer/css/home.css' %}?v={{ cache_buster }}">
     <!-- Theme initialization script to prevent FOUC -->
     <script>
-        (function() {
+        (function () {
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme) {
                 document.documentElement.setAttribute('data-theme', savedTheme);
@@ -24,6 +27,7 @@
         })();
     </script>
 </head>
+
 <body>
     <!-- Background glows -->
     <div class="glow-container">
@@ -36,31 +40,24 @@
         <section class="hero-card panel">
             <!-- Theme Toggle Button -->
             <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle theme" title="Toggle theme">
-                <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 7a5 5 0 100 10 5 5 0 000-10z" />
+                <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707m0-12.728l.707.707m12.728 12.728l.707-.707M12 7a5 5 0 100 10 5 5 0 000-10z" />
                 </svg>
-                <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                <svg class="moon-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                 </svg>
             </button>
             <div class="hero-copy">
-                <span class="eyebrow">Advanced Analytics Workspace</span>
-                <h1>Tensor Decomposer</h1>
-                <p class="lede">Run CP, Tucker, HOSVD, and Tensor Train decomposition workflows. Analyze reconstruction accuracy, size compression ratios, benchmark execution speeds, and compare methods side-by-side.</p>
-            </div>
-            <div class="hero-stats">
-                <article class="stat-box">
-                    <strong>8</strong>
-                    <span>Tensor Methods</span>
-                </article>
-                <article class="stat-box">
-                    <strong>3</strong>
-                    <span>Analysis Modules</span>
-                </article>
-                <article class="stat-box">
-                    <strong>1</strong>
-                    <span>Interactive Solver</span>
-                </article>
+                <h1 class="hero-heading">
+                    <span class="hero-title-main">Tensor Decomposer</span>
+                    <span class="hero-title-sep">:</span>
+                    <span class="hero-title-sub">An Interactive High-Dimensional Multiway Data Analysis and Benchmarking
+                        System</span>
+                </h1>
             </div>
         </section>
 
@@ -68,7 +65,7 @@
         <!-- Error Panel -->
         <section id="panel-error" class="error-panel panel {% if not error %}hidden{% endif %}">
             <div class="error-header">
-                <span class="error-icon">⚠️</span>
+                <span class="error-icon">!</span>
                 <h3>Computation Error</h3>
             </div>
             <p class="error-message">{{ error }}</p>
@@ -82,7 +79,7 @@
                     <h2>Configuration &amp; Inputs</h2>
                     <p class="panel-subtitle">Define input tensor parameters and algorithm options</p>
                 </div>
-                
+
                 <form method="post" enctype="multipart/form-data" class="tensor-form">
                     {% csrf_token %}
 
@@ -92,16 +89,21 @@
                             <div class="field-group">
                                 <div class="field-header-row">
                                     <label for="tensor_input">Tensor Input (JSON Array)</label>
-                                    <span id="random-tensor-feedback" class="random-feedback-badge hidden">✓ Inserted</span>
+                                    <span id="random-tensor-feedback" class="random-feedback-badge hidden">Inserted</span>
                                 </div>
                                 <div class="random-tensor-bar">
-                                    <span class="random-bar-label">🎲 Auto Insert:</span>
-                                    <button type="button" class="btn-random-chip" data-shape="3,3,3" title="Auto insert random 3×3×3 3D tensor (27 elements)">3×3×3 (3D)</button>
-                                    <button type="button" class="btn-random-chip" data-shape="4,3,2" title="Auto insert random 4×3×2 3D tensor (24 elements)">4×3×2 (3D)</button>
-                                    <button type="button" class="btn-random-chip" data-shape="2,2,2,2" title="Auto insert random 2×2×2×2 4D tensor (16 elements)">4D (2⁴)</button>
-                                    <button type="button" class="btn-random-chip" data-shape="3,2,3,2" title="Auto insert random 3×2×3×2 4D tensor (36 elements)">4D (3×2×3×2)</button>
+                                    <span class="random-bar-label">Auto Insert:</span>
+                                    <button type="button" class="btn-random-chip" data-shape="3,3,3"
+                                        title="Auto insert random 3×3×3 3D tensor (27 elements)">3×3×3 (3D)</button>
+                                    <button type="button" class="btn-random-chip" data-shape="4,3,2"
+                                        title="Auto insert random 4×3×2 3D tensor (24 elements)">4×3×2 (3D)</button>
+                                    <button type="button" class="btn-random-chip" data-shape="2,2,2,2"
+                                        title="Auto insert random 2×2×2×2 4D tensor (16 elements)">4D (2⁴)</button>
+                                    <button type="button" class="btn-random-chip" data-shape="3,2,3,2"
+                                        title="Auto insert random 3×2×3×2 4D tensor (36 elements)">4D (3×2×3×2)</button>
                                 </div>
-                                <textarea id="tensor_input" name="tensor_input" rows="8" placeholder="[[[1, 2], [3, 4]], [[5, 6], [7, 8]]]">{{ tensor_input|default:'' }}</textarea>
+                                <textarea id="tensor_input" name="tensor_input" rows="8"
+                                    placeholder="[[[1, 2], [3, 4]], [[5, 6], [7, 8]]]">{{ tensor_input|default:'' }}</textarea>
                             </div>
                         </div>
 
@@ -131,7 +133,9 @@
                                         <label for="ranks_input">Target Ranks (Optional)</label>
                                         <span class="ranks-hint-badge" id="ranks-hint-badge">Auto</span>
                                     </div>
-                                    <input type="text" id="ranks_input" name="ranks_input" placeholder="e.g. 2 (CP) | 2, 3, 2 (Tucker/HOSVD) | 2, 2 (TT)" value="{{ ranks_input|default:'' }}">
+                                    <input type="text" id="ranks_input" name="ranks_input"
+                                        placeholder="e.g. 2 (CP) | 2, 3, 2 (Tucker/HOSVD) | 2, 2 (TT)"
+                                        value="{{ ranks_input|default:'' }}">
                                     <div class="rank-bounds-info" id="rank-bounds-info"></div>
                                 </div>
 
@@ -144,13 +148,18 @@
                             </div>
 
                             <div class="action-grid">
-                                <button type="submit" name="action" value="decompose" class="btn btn-primary">Decompose</button>
-                                <button type="submit" name="action" value="visualize" class="btn btn-primary">Visualize</button>
-                                
-                                <button type="submit" name="action" value="benchmark" class="btn btn-primary">Benchmark &amp; Compression</button>
-                                <button type="submit" name="action" value="analyze" class="btn btn-primary">Restruct &amp; Accuracy</button>
-                                
-                                <button type="submit" name="action" value="compare" class="btn btn-compare full-width">Compare All Methods</button>
+                                <button type="submit" name="action" value="decompose"
+                                    class="btn btn-primary btn-decompose">Decompose</button>
+                                <button type="submit" name="action" value="visualize"
+                                    class="btn btn-primary btn-visualize">Visualize</button>
+
+                                <button type="submit" name="action" value="benchmark"
+                                    class="btn btn-primary btn-benchmark">Benchmark &amp; Compression</button>
+                                <button type="submit" name="action" value="analyze"
+                                    class="btn btn-primary btn-analyze">Restruct &amp; Accuracy</button>
+
+                                <button type="submit" name="action" value="compare"
+                                    class="btn btn-compare full-width">Compare All Methods</button>
                             </div>
                         </div>
                     </div>
@@ -159,7 +168,7 @@
 
             <!-- Bottom Section: Results & Interactive Output -->
             <section class="results-column">
-                
+
                 <!-- Visualization Card (Dynamic SVGs inserted here) -->
                 <article id="panel-visualization" class="panel result-block hidden">
                     <div class="panel-header-row">
@@ -174,8 +183,9 @@
                 <article id="panel-decomposition" class="panel result-block {% if not result_json %}hidden{% endif %}">
                     <div class="panel-header-row">
                         <h2>Decomposition Factors</h2>
-                        <a href="{% if download_url %}{% url 'download_result' download_url %}{% endif %}" class="download-btn {% if not download_url %}hidden{% endif %}" download target="_blank">
-                            <span>Download JSON</span> 📥
+                        <a href="{% if download_url %}{% url 'download_result' download_url %}{% endif %}"
+                            class="download-btn {% if not download_url %}hidden{% endif %}" download target="_blank">
+                            <span>Download JSON</span>
                         </a>
                     </div>
                     <div class="code-container">
@@ -186,7 +196,11 @@
                 <!-- Reconstruction Analysis -->
                 <article id="panel-analysis" class="panel result-block {% if not analysis_json %}hidden{% endif %}">
                     <div class="panel-header-row">
-                        <h2>Accuracy Metrics</h2>
+                        <h2>Accuracy Metrics &amp; Reconstruction</h2>
+                        <a id="btn-download-recon" href="{% if recon_download_url %}{% url 'download_result' recon_download_url %}{% endif %}"
+                            class="download-btn {% if not recon_download_url %}hidden{% endif %}" download target="_blank">
+                            <span>Download Reconstructed JSON</span>
+                        </a>
                     </div>
                     <div class="metric-grid-three">
                         <div class="metric-card">
@@ -202,9 +216,22 @@
                             <strong id="metric-rel-error" class="text-blue">{{ analysis.relative_error }}</strong>
                         </div>
                     </div>
-                    
-                    <div class="reconstructed-head-wrapper" style="margin-top: 1rem;">
-                        <span class="metric-label" style="display: block; margin-bottom: 0.5rem;">Reconstructed Tensor Element Head (min(10, len(tensor)))</span>
+
+                    <!-- Interactive Dual Tensor Reconstruction Viewer -->
+                    <div id="reconstruction-viewer-container" class="reconstruction-viewer-container" style="margin-top: 1.5rem;">
+                        <!-- Dynamic interactive dual-tensor slider & value inspector generated via JS -->
+                    </div>
+
+                    {% if analysis_json %}
+                    <script id="initial-analysis-data" type="application/json">{{ analysis_json|safe }}</script>
+                    {% endif %}
+                    {% if tensor_json %}
+                    <script id="initial-tensor-data" type="application/json">{{ tensor_json|safe }}</script>
+                    {% endif %}
+
+                    <div class="reconstructed-head-wrapper" style="margin-top: 1.25rem;">
+                        <span class="metric-label" style="display: block; margin-bottom: 0.5rem;">Reconstructed Tensor
+                            Element Head (min(10, len(tensor)))</span>
                         <div class="code-container" style="max-height: 15rem;">
                             <pre id="metric-recon-head">{{ analysis.reconstructed_head }}</pre>
                         </div>
@@ -223,7 +250,8 @@
                     <div class="metric-grid">
                         <div class="metric-card">
                             <span class="metric-label">Execution Time</span>
-                            <strong id="metric-avg-time" class="text-indigo">{{ benchmark.execution_time_ms }} ms</strong>
+                            <strong id="metric-avg-time" class="text-indigo">{{ benchmark.execution_time_ms }}
+                                ms</strong>
                         </div>
                         <div class="metric-card">
                             <span class="metric-label">Estimated FLOPs</span>
@@ -235,20 +263,23 @@
                         </div>
                         <div class="metric-card">
                             <span class="metric-label">Compression Ratio</span>
-                            <strong id="metric-compression-ratio" class="text-cyan">{{ benchmark.compression_ratio }}x</strong>
+                            <strong id="metric-compression-ratio" class="text-cyan">{{ benchmark.compression_ratio
+                                }}x</strong>
                         </div>
                         <div class="metric-card">
                             <span class="metric-label">Parameters (Compressed / Org)</span>
-                            <strong id="metric-benchmark-params" class="text-indigo">{{ benchmark.compressed_parameters }} / {{ benchmark.original_parameters }}</strong>
+                            <strong id="metric-benchmark-params" class="text-indigo">{{ benchmark.compressed_parameters
+                                }} / {{ benchmark.original_parameters }}</strong>
                         </div>
                         <div class="metric-card">
                             <span class="metric-label">Runs Measured</span>
                             <strong id="metric-runs" class="text-gray">{{ benchmark.repeats }}</strong>
                         </div>
                     </div>
-                    
+
                     <!-- Nested benchmark visualization -->
-                    <div id="benchmark-visualization-container" class="visualization-wrapper" style="margin-top: 1.5rem; display: none;">
+                    <div id="benchmark-visualization-container" class="visualization-wrapper"
+                        style="margin-top: 1.5rem; display: none;">
                         <!-- Benchmark charts generated via JS -->
                     </div>
 
@@ -274,19 +305,20 @@
                             </thead>
                             <tbody>
                                 {% for row in comparison %}
-                                    <tr>
-                                        <td class="font-semibold text-cyan-400">{{ row.algorithm|upper }}</td>
-                                        <td><span class="badge badge-teal">{{ row.compression_ratio }}x</span></td>
-                                        <td><span class="badge badge-purple">{{ row.relative_error }}</span></td>
-                                        <td class="font-mono text-gray-300">{{ row.execution_time_ms }} ms</td>
-                                    </tr>
+                                <tr>
+                                    <td class="font-semibold text-cyan-400">{{ row.algorithm|upper }}</td>
+                                    <td><span class="badge badge-teal">{{ row.compression_ratio }}x</span></td>
+                                    <td><span class="badge badge-purple">{{ row.relative_error }}</span></td>
+                                    <td class="font-mono text-gray-300">{{ row.execution_time_ms }} ms</td>
+                                </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                     </div>
 
                     <!-- Nested comparison visualization -->
-                    <div id="comparison-visualization-container" class="visualization-wrapper" style="margin-top: 1.5rem; display: none;">
+                    <div id="comparison-visualization-container" class="visualization-wrapper"
+                        style="margin-top: 1.5rem; display: none;">
                         <!-- Comparison charts generated via JS -->
                     </div>
 
@@ -294,7 +326,7 @@
                         <pre>{{ comparison_json }}</pre>
                     </div>
                 </article>
-                
+
             </section>
         </section>
     </main>
@@ -302,4 +334,5 @@
     <!-- Script hooks for AJAX -->
     <script type="module" src="{% static 'tensor_decomposer/js/home.js' %}?v={{ cache_buster }}" defer></script>
 </body>
+
 </html>

@@ -9,7 +9,8 @@ import {
 import { 
     renderVisualizations, 
     renderBenchmarkChart, 
-    renderComparisonCharts 
+    renderComparisonCharts,
+    renderReconstructionViewer
 } from './visualizer.js';
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -77,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Feedback badge
             if (feedbackBadge) {
-                feedbackBadge.textContent = `✓ Inserted ${dims.join("×")}`;
+                feedbackBadge.textContent = `Inserted ${dims.join("×")}`;
                 feedbackBadge.classList.remove("hidden");
                 clearTimeout(feedbackBadge._timer);
                 feedbackBadge._timer = setTimeout(() => {
@@ -393,6 +394,35 @@ document.addEventListener("DOMContentLoaded", () => {
                     
                     const pre = panelAnalysis.querySelector("pre");
                     if (pre) pre.textContent = formatAnalysisStyle(data.analysis);
+
+                    // Update download button
+                    const reconDlBtn = document.getElementById("btn-download-recon");
+                    if (reconDlBtn) {
+                        if (data.recon_download_url) {
+                            reconDlBtn.href = `/download/${data.recon_download_url}/`;
+                            reconDlBtn.classList.remove("hidden");
+                        } else {
+                            reconDlBtn.href = "#";
+                            reconDlBtn.classList.remove("hidden");
+                        }
+                    }
+
+                    // Render interactive dual-tensor reconstruction viewer
+                    let origTensor = data.tensor;
+                    if (!origTensor && inputTextArea && inputTextArea.value.trim()) {
+                        try {
+                            origTensor = JSON.parse(inputTextArea.value.trim());
+                        } catch (e) {}
+                    }
+
+                    renderReconstructionViewer(
+                        origTensor,
+                        data.analysis.reconstructed_tensor,
+                        data.analysis,
+                        data.algorithm || (algoSelect ? algoSelect.value : "cp"),
+                        data.recon_download_url
+                    );
+
                     panelAnalysis.classList.remove("hidden");
                     panelAnalysis.scrollIntoView({ behavior: "smooth", block: "nearest" });
                 }
@@ -446,11 +476,17 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
 
-        if (panelAnalysis) {
+        if (panelAnalysis && !panelAnalysis.classList.contains("hidden")) {
             const analysisPre = panelAnalysis.querySelector("pre");
             if (analysisPre && analysisPre.textContent.trim()) {
                 try {
-                    const parsed = JSON.parse(analysisPre.textContent);
+                    let parsed = null;
+                    const initialAnalysisScript = document.getElementById("initial-analysis-data");
+                    if (initialAnalysisScript && initialAnalysisScript.textContent.trim()) {
+                        parsed = JSON.parse(initialAnalysisScript.textContent);
+                    } else {
+                        parsed = JSON.parse(analysisPre.textContent);
+                    }
                     analysisPre.textContent = formatAnalysisStyle(parsed);
                     
                     const maeEl = document.getElementById("metric-mae");
@@ -469,6 +505,35 @@ document.addEventListener("DOMContentLoaded", () => {
                     }
                     if (reconHeadEl && parsed.reconstructed_head !== undefined) {
                         reconHeadEl.textContent = formatValue(parsed.reconstructed_head);
+                    }
+
+                    // Initial render of reconstruction viewer
+                    let initialOrig = null;
+                    const initialTensorScript = document.getElementById("initial-tensor-data");
+                    if (initialTensorScript && initialTensorScript.textContent.trim()) {
+                        try {
+                            initialOrig = JSON.parse(initialTensorScript.textContent);
+                        } catch (e) {}
+                    }
+                    if (!initialOrig && inputTextArea && inputTextArea.value.trim()) {
+                        try {
+                            initialOrig = JSON.parse(inputTextArea.value.trim());
+                        } catch (e) {}
+                    }
+
+                    if (initialOrig && parsed && parsed.reconstructed_tensor) {
+                        const dlReconBtn = document.getElementById("btn-download-recon");
+                        let reconUrl = null;
+                        if (dlReconBtn && dlReconBtn.getAttribute("href")) {
+                            reconUrl = dlReconBtn.getAttribute("href").replace(/^\/download\/|\/$/g, "");
+                        }
+                        renderReconstructionViewer(
+                            initialOrig,
+                            parsed.reconstructed_tensor,
+                            parsed,
+                            algoSelect ? algoSelect.value : "cp",
+                            reconUrl
+                        );
                     }
                 } catch (e) {
                     // Error

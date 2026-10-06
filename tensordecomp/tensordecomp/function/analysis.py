@@ -41,6 +41,7 @@ def analyze_decomposition(array: np.ndarray, algorithm: str, result: dict[str, A
         "root_mean_squared_error": round(root_mean_squared_error, 6),
         "relative_error": round(relative_error, 6),
         "reconstructed_head": reconstructed_head,
+        "reconstructed_tensor": reconstructed.tolist() if hasattr(reconstructed, "tolist") else reconstructed,
     }
 
 

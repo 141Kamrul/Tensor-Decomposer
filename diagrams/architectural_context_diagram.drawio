@@ -1,0 +1,82 @@
+<mxfile host="app.diagrams.net" modified="2026-10-06T12:30:00.000Z" agent="Mozilla/5.0" version="24.7.17">
+  <diagram id="arch-context-diagram" name="Architectural Context Diagram">
+    <mxGraphModel dx="1000" dy="650" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="940" pageHeight="560" background="#ffffff" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- CORE SYSTEM (CENTER) -->
+        <mxCell id="main_system" value="&lt;b style=&quot;font-size: 15px;&quot;&gt;Tensor Decomposer&lt;br&gt;System&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#ffffff;strokeColor=#000000;strokeWidth=2;align=center;fontColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="360" y="190" width="220" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- ACTORS (LEFT) -->
+        <mxCell id="actor_user" value="&lt;b&gt;User&lt;/b&gt;" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="80" y="120" width="55" height="85" as="geometry" />
+        </mxCell>
+
+        <mxCell id="actor_client" value="&lt;b&gt;API Client&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;align=center;fontColor=#000000;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="50" y="310" width="120" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- EXTERNAL SYSTEMS (RIGHT) -->
+        <mxCell id="ext_browser" value="&lt;b&gt;Web Browser&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;align=center;fontColor=#000000;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="720" y="110" width="140" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ext_storage" value="&lt;b&gt;File Storage&lt;/b&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=12;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;align=center;fontColor=#000000;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="730" y="220" width="120" height="65" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ext_numpy" value="&lt;b&gt;Numerical Stack&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;font-size: 11px;&quot;&gt;NumPy / SciPy&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;align=center;fontColor=#000000;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="720" y="330" width="140" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- EXTERNAL ENVIRONMENT (BOTTOM) -->
+        <mxCell id="ext_host" value="&lt;b&gt;Hosting Server&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;arcSize=8;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;align=center;fontColor=#000000;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="400" y="410" width="140" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- STRAIGHT CONNECTING ARROWS (NO BENDS) -->
+        <!-- User <-> System -->
+        <mxCell id="edge_user_in" value="Tensor Input" style="html=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;endArrow=classic;exitX=1;exitY=0.33;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" edge="1" source="actor_user" target="main_system" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="edge_user_out" value="Views Results" style="html=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;endArrow=classic;exitX=0;exitY=0.45;exitDx=0;exitDy=0;entryX=1;entryY=0.66;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" source="main_system" target="actor_user" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- API Client <-> System -->
+        <mxCell id="edge_client_in" value="API Requests" style="html=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;endArrow=classic;exitX=1;exitY=0.3;exitDx=0;exitDy=0;entryX=0;entryY=0.75;entryDx=0;entryDy=0;" edge="1" source="actor_client" target="main_system" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="edge_client_out" value="JSON Responses" style="html=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;endArrow=classic;exitX=0;exitY=0.9;exitDx=0;exitDy=0;entryX=1;entryY=0.75;entryDx=0;entryDy=0;" edge="1" source="main_system" target="actor_client" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- System -> Web Browser -->
+        <mxCell id="edge_browser" value="Renders Interface" style="html=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;endArrow=classic;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.6;entryDx=0;entryDy=0;" edge="1" source="main_system" target="ext_browser" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- System <-> File Storage -->
+        <mxCell id="edge_storage" value="Saves &amp; Loads" style="html=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;startArrow=classic;endArrow=classic;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" source="main_system" target="ext_storage" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- System <-> Numerical Stack -->
+        <mxCell id="edge_numpy" value="Tensor Operations" style="html=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;startArrow=classic;endArrow=classic;exitX=1;exitY=0.75;exitDx=0;exitDy=0;entryX=0;entryY=0.4;entryDx=0;entryDy=0;" edge="1" source="main_system" target="ext_numpy" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- System -> Hosting Server -->
+        <mxCell id="edge_host" value="Runs On" style="html=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;endArrow=classic;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="main_system" target="ext_host" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

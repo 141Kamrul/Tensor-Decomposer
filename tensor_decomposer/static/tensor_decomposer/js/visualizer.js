@@ -235,9 +235,157 @@ export function renderComparisonCharts(comparison) {
     ratioCard.appendChild(createComparisonBarChart(labels, ratios, "#06b6d4", "ratio"));
     grid.appendChild(ratioCard);
 
-    // 3. Execution time comparison
     const timeCard = createVisualCard("Execution Time (ms) (Lower is Better)");
     const times = comparison.map(c => c.execution_time_ms);
     timeCard.appendChild(createComparisonBarChart(labels, times, "#ec4899", "time"));
     grid.appendChild(timeCard);
 }
+
+export function renderReconstructionViewer(originalTensor, reconstructedTensor, analysis, algorithm = "cp") {
+    const container = document.getElementById("reconstruction-viewer-container");
+    if (!container) return;
+    container.innerHTML = "";
+
+    const recon = reconstructedTensor || (analysis && analysis.reconstructed_tensor);
+    const orig = originalTensor;
+
+    if (!orig || !recon) {
+        container.style.display = "none";
+        return;
+    }
+
+    container.style.display = "block";
+
+    const origShape = getTensorShape(orig);
+    const reconShape = getTensorShape(recon);
+    const numModes = origShape.length;
+    const isMultiDimensional = numModes >= 3;
+
+    // Title matching visualize
+    const header = document.createElement("h3");
+    header.className = "visual-title";
+    header.textContent = `Reconstruction: ${algorithm.toUpperCase()}`;
+    container.appendChild(header);
+
+    let currentMode = 0;
+    let currentSlice = 0;
+
+    let modeSelect = null;
+    let slider = null;
+    let badge = null;
+
+    // Interactive synchronized slice slider for 3D/higher-order tensors
+    if (isMultiDimensional) {
+        const controlsBar = document.createElement("div");
+        controlsBar.className = "slice-control-bar";
+        controlsBar.style.maxWidth = "460px";
+        controlsBar.style.margin = "0 auto 1.25rem auto";
+
+        modeSelect = document.createElement("select");
+        modeSelect.className = "slice-mode-select font-mono";
+        for (let m = 0; m < numModes; m++) {
+            const opt = document.createElement("option");
+            opt.value = m;
+            opt.textContent = `Mode ${m} (Dim ${origShape[m]})`;
+            modeSelect.appendChild(opt);
+        }
+        controlsBar.appendChild(modeSelect);
+
+        slider = document.createElement("input");
+        slider.type = "range";
+        slider.className = "slice-range-slider";
+        slider.min = "0";
+        slider.max = String(Math.max(0, origShape[0] - 1));
+        slider.value = "0";
+        controlsBar.appendChild(slider);
+
+        badge = document.createElement("span");
+        badge.className = "slice-badge font-mono";
+        badge.textContent = `Slice 1 / ${origShape[0]}`;
+        controlsBar.appendChild(badge);
+
+        container.appendChild(controlsBar);
+    }
+
+    // Side-by-side grid identical to visualize
+    const grid = document.createElement("div");
+    grid.className = "visual-grid";
+    grid.style.gridTemplateColumns = "repeat(auto-fit, minmax(240px, 1fr))";
+    grid.style.maxWidth = "660px";
+    grid.style.margin = "0 auto";
+    container.appendChild(grid);
+
+    // 1. Original Tensor Card
+    const origCard = createVisualCard("Original Tensor (X)", `Shape: ${origShape.join("×")}`);
+    const origHeatmapWrapper = document.createElement("div");
+    origHeatmapWrapper.className = "heatmap-3d-wrapper";
+    origCard.appendChild(origHeatmapWrapper);
+    grid.appendChild(origCard);
+
+    // 2. Reconstructed Tensor Card
+    const reconCard = createVisualCard("Reconstructed Tensor (X̂)", `Shape: ${reconShape.join("×")}`);
+    const reconHeatmapWrapper = document.createElement("div");
+    reconHeatmapWrapper.className = "heatmap-3d-wrapper";
+    reconCard.appendChild(reconHeatmapWrapper);
+    grid.appendChild(reconCard);
+
+    const origSubtitleEl = origCard.querySelector(".visual-card-subtitle");
+    const reconSubtitleEl = reconCard.querySelector(".visual-card-subtitle");
+
+    function updateSlice() {
+        if (isMultiDimensional) {
+            currentMode = parseInt(modeSelect.value, 10);
+            const maxIndex = Math.max(0, origShape[currentMode] - 1);
+            slider.max = String(maxIndex);
+            if (parseInt(slider.value, 10) > maxIndex) {
+                slider.value = String(maxIndex);
+            }
+            currentSlice = parseInt(slider.value, 10);
+            badge.textContent = `Slice ${currentSlice + 1} / ${origShape[currentMode]}`;
+        }
+
+        const origSlice = extract2DSlice(orig, currentMode, currentSlice);
+        const reconSlice = extract2DSlice(recon, currentMode, currentSlice);
+
+        const origSliceShape = getTensorShape(origSlice);
+        const oRows = origSliceShape[0] || (Array.isArray(origSlice) ? origSlice.length : 1);
+        const oCols = origSliceShape[1] || (Array.isArray(origSlice) && Array.isArray(origSlice[0]) ? origSlice[0].length : 1);
+
+        const reconSliceShape = getTensorShape(reconSlice);
+        const rRows = reconSliceShape[0] || (Array.isArray(reconSlice) ? reconSlice.length : 1);
+        const rCols = reconSliceShape[1] || (Array.isArray(reconSlice) && Array.isArray(reconSlice[0]) ? reconSlice[0].length : 1);
+
+        const globalMax = Math.max(oRows, oCols, rRows, rCols, 1);
+
+        if (origSubtitleEl) {
+            const isTrunc = oRows > 12 || oCols > 12;
+            origSubtitleEl.textContent = isMultiDimensional 
+                ? `Mode ${currentMode} Slice [${currentSlice + 1}/${origShape[currentMode]}] — Shape: ${oRows}×${oCols}${isTrunc ? " (top 12×12)" : ""}`
+                : `Shape: ${oRows}×${oCols}${isTrunc ? " (top 12×12)" : ""}`;
+        }
+
+        if (reconSubtitleEl) {
+            const isTrunc = rRows > 12 || rCols > 12;
+            reconSubtitleEl.textContent = isMultiDimensional
+                ? `Mode ${currentMode} Slice [${currentSlice + 1}/${origShape[currentMode]}] — Shape: ${rRows}×${rCols}${isTrunc ? " (top 12×12)" : ""}`
+                : `Shape: ${rRows}×${rCols}${isTrunc ? " (top 12×12)" : ""}`;
+        }
+
+        origHeatmapWrapper.innerHTML = "";
+        origHeatmapWrapper.appendChild(createHeatmapSVG(origSlice, oRows, oCols, globalMax));
+
+        reconHeatmapWrapper.innerHTML = "";
+        reconHeatmapWrapper.appendChild(createHeatmapSVG(reconSlice, rRows, rCols, globalMax));
+    }
+
+    if (isMultiDimensional) {
+        modeSelect.addEventListener("change", () => {
+            slider.value = "0";
+            updateSlice();
+        });
+        slider.addEventListener("input", updateSlice);
+    }
+
+    updateSlice();
+}
+

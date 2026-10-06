@@ -4,7 +4,7 @@ A high-performance computational web application built with **Django**, **NumPy*
 
 ---
 
-## 🌟 Key Features
+## Key Features
 
 * **Tensor Decompositions:**
   * **CP (CANDECOMP/PARAFAC)**: Alternating Least Squares (CP-ALS) via Khatri-Rao products.
@@ -24,14 +24,14 @@ A high-performance computational web application built with **Django**, **NumPy*
 
 ---
 
-## 🛠️ Prerequisites
+## Prerequisites
 
 * **Python:** `3.13+`
 * **Package Manager:** [`uv`](https://github.com/astral-sh/uv) *(recommended)* or standard `pip` / `venv`.
 
 ---
 
-## 🚀 Quick Start (Local Setup)
+## Quick Start (Local Setup)
 
 ### 1. Clone the Repository
 ```bash
@@ -82,7 +82,7 @@ Open your browser and navigate to: `http://127.0.0.1:8000/`
 
 ---
 
-## 🌐 Running Across Multiple Devices in the Same Local Setup (LAN / Wi-Fi)
+## Running Across Multiple Devices in the Same Local Setup (LAN / Wi-Fi)
 
 You can host the application on one main computer (Server Device) and access the interface from any other device (Mobile Phone, Tablet, Laptop, or PC) connected to the **same Wi-Fi network or Local Area Network (LAN)**.
 
@@ -105,7 +105,7 @@ python manage.py runserver 0.0.0.0:8000
 
 Run the command corresponding to the host operating system to find its IP address on your local network:
 
-#### 🐧 Linux:
+#### Linux:
 ```bash
 hostname -I
 # or
@@ -113,13 +113,13 @@ ip a
 ```
 *Look for an IP like `192.168.x.x` or `10.x.x.x`.*
 
-#### 🍏 macOS:
+#### macOS:
 ```bash
 ipconfig getifaddr en0
 # (or en1 depending on Wi-Fi/Ethernet interface)
 ```
 
-#### 🪟 Windows (Command Prompt / PowerShell):
+#### Windows (Command Prompt / PowerShell):
 ```cmd
 ipconfig
 ```
@@ -139,7 +139,7 @@ http://<HOST_IP>:8000
 
 ---
 
-### 🛡️ Troubleshooting Local Network Connections
+### Troubleshooting Local Network Connections
 
 If client devices cannot reach the host server (`Connection Timed Out` or `Site Cannot Be Reached`), ensure port `8000` is permitted through the host machine's firewall:
 
@@ -156,7 +156,7 @@ If client devices cannot reach the host server (`Connection Timed Out` or `Site 
 
 ---
 
-## 🧪 Running Unit Tests
+## Running Unit Tests
 
 To verify that all algorithms, parsers, and services are functioning correctly:
 
@@ -170,7 +170,7 @@ uv run pytest
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```text
 Tensor-Decomposer/
@@ -199,6 +199,6 @@ Tensor-Decomposer/
 
 ---
 
-## 📊 Exported Results
+## Exported Results
 
 When a decomposition or comparison is performed, JSON files containing the tensor data, factor matrices/core tensors, and performance analytics are saved to the `results/` folder and can be directly downloaded from the web interface.
