@@ -1,0 +1,104 @@
+<mxfile host="app.diagrams.net" modified="2026-10-06T13:10:00.000Z" agent="Mozilla/5.0" version="24.7.17">
+  <diagram id="deployment-diagram" name="Deployment Diagram">
+    <mxGraphModel dx="1200" dy="750" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="650" background="#ffffff" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ================= CLIENT TIER ================= -->
+        <mxCell id="node_client" value="«device»&#xa;Client Workstation" style="shape=cube;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;darkOpacity=0.04;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;align=center;verticalAlign=top;spacingTop=12;fontColor=#000000;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="80" width="240" height="400" as="geometry" />
+        </mxCell>
+
+        <mxCell id="env_browser" value="«executionEnvironment»&#xa;Web Browser" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;align=center;verticalAlign=top;spacingTop=8;fontColor=#000000;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="70" y="140" width="200" height="190" as="geometry" />
+        </mxCell>
+
+        <mxCell id="art_ui" value="«artifact»&#xa;Frontend Client" style="shape=component;align=left;spacingLeft=32;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="85" y="190" width="170" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="art_svg" value="«artifact»&#xa;Visualizer Engine" style="shape=component;align=left;spacingLeft=32;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="85" y="260" width="170" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="art_storage_client" value="«artifact»&#xa;LocalStorage" style="shape=component;align=left;spacingLeft=32;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="70" y="360" width="200" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- ================= SERVER TIER ================= -->
+        <mxCell id="node_server" value="«device»&#xa;Application Server" style="shape=cube;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;darkOpacity=0.04;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;align=center;verticalAlign=top;spacingTop=12;fontColor=#000000;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="360" y="80" width="480" height="470" as="geometry" />
+        </mxCell>
+
+        <mxCell id="env_wsgi" value="«executionEnvironment»&#xa;Web Server" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;align=center;verticalAlign=top;spacingTop=6;fontColor=#000000;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="390" y="140" width="420" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="env_python" value="«executionEnvironment»&#xa;Python Runtime" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;align=center;verticalAlign=top;spacingTop=8;fontColor=#000000;fontSize=11;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="390" y="210" width="420" height="310" as="geometry" />
+        </mxCell>
+
+        <mxCell id="art_django" value="«artifact»&#xa;Django Web App" style="shape=component;align=left;spacingLeft=32;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="410" y="260" width="180" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="art_library" value="«artifact»&#xa;tensordecomp Engine" style="shape=component;align=left;spacingLeft=32;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="610" y="260" width="180" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="art_numpy" value="«artifact»&#xa;NumPy BLAS" style="shape=component;align=left;spacingLeft=32;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="510" y="345" width="180" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="art_testsuite" value="«artifact»&#xa;Automated Test Suite" style="shape=component;align=left;spacingLeft=32;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="450" y="435" width="300" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- ================= STORAGE TIER ================= -->
+        <mxCell id="node_storage" value="«device»&#xa;Storage Volume" style="shape=cube;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;darkOpacity=0.04;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;align=center;verticalAlign=top;spacingTop=12;fontColor=#000000;fontSize=13;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="910" y="160" width="220" height="240" as="geometry" />
+        </mxCell>
+
+        <mxCell id="art_results" value="«artifact»&#xa;Artifacts Storage" style="shape=component;align=left;spacingLeft=32;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="930" y="235" width="180" height="55" as="geometry" />
+        </mxCell>
+
+        <mxCell id="art_uploads" value="«artifact»&#xa;Upload Cache" style="shape=component;align=left;spacingLeft=32;html=1;whiteSpace=wrap;fillColor=#ffffff;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="930" y="315" width="180" height="55" as="geometry" />
+        </mxCell>
+
+        <!-- ================= STRAIGHT CONNECTING ARROWS ================= -->
+        <!-- Client <-> Server Network Connection -->
+        <mxCell id="edge_client_server_in" value="HTTPS Requests" style="html=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;endArrow=classic;exitX=1;exitY=0.25;exitDx=0;exitDy=0;entryX=0;entryY=0.35;entryDx=0;entryDy=0;" edge="1" source="node_client" target="env_wsgi" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="edge_client_server_out" value="JSON Results" style="html=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=11;endArrow=classic;exitX=0;exitY=0.75;exitDx=0;exitDy=0;entryX=1;entryY=0.45;entryDx=0;entryDy=0;" edge="1" source="env_wsgi" target="node_client" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- WSGI -> Django App -->
+        <mxCell id="edge_wsgi_django" value="WSGI Protocol" style="html=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;endArrow=classic;exitX=0.25;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" source="env_wsgi" target="art_django" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Django App <-> Library -->
+        <mxCell id="edge_django_lib" value="Execute Algorithm" style="html=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;endArrow=classic;startArrow=classic;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" source="art_django" target="art_library" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Library -> NumPy BLAS -->
+        <mxCell id="edge_lib_numpy" value="Matrix Operations" style="html=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;endArrow=classic;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.75;entryY=0;entryDx=0;entryDy=0;" edge="1" source="art_library" target="art_numpy" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Django App -> Storage -->
+        <mxCell id="edge_django_storage" value="File I/O" style="html=1;strokeColor=#000000;strokeWidth=1.5;fontColor=#000000;fontSize=10;endArrow=classic;startArrow=classic;exitX=1;exitY=0.3;exitDx=0;exitDy=0;entryX=0;entryY=0.6;entryDx=0;entryDy=0;" edge="1" source="node_server" target="node_storage" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
