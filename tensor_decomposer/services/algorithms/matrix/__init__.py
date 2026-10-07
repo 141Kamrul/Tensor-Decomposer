@@ -1,2 +1,2 @@
 # Backward compatibility re-export from standalone tensordecomp library
-from tensordecomp.algorithms.tensor.cp_puzzle import *
+from tensordecomp.algorithms.matrix import *
