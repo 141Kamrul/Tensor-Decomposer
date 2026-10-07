@@ -45,14 +45,14 @@ import numpy as np
 import tensordecomp as td
 
 # 1. Create a 3D tensor
-tensor = np.random.rand(4, 5, 6)
+tensor = np.random.rand(4, 5, 6, 8)
 
 # 2. Run CP Decomposition
 cp_res = td.cp(tensor, rank=3)
 print("CP Factors:", [f.shape for f in cp_res["factors"]])
 
 # 3. Run PuzzleTensor Shifting
-shifted_tensor, shifts = td.puzzle_tensor(tensor, max_shift=2)
+shifted_tensor, shifts = td.puzzle_tensor(tensor, max_shift=2, return_shifts=True)
 
 # 4. Run Puzzle-Augmented Tucker Decomposition
 tucker_res = td.tucker_puzzle(tensor, ranks=[3, 3, 3])
@@ -67,6 +67,7 @@ print(f"Compression: {analysis['compression_ratio']:.2f}x")
 comparison = td.compare_methods(tensor, ["cp", "tucker", "hosvd", "tensor_train"])
 for row in comparison:
     print(f"{row['algorithm']}: {row['execution_time_ms']:.2f}ms, error={row['relative_error']:.4e}")
+
 ```
 
 ---

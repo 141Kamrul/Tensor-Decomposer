@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import Any
 
-import scipy as sc
-
 import numpy as np
 
 
