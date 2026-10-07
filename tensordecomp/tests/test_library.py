@@ -76,6 +76,15 @@ def test_puzzle_tensor_roundtrip():
     np.testing.assert_allclose(restored, tensor, rtol=1e-5, atol=1e-5)
 
 
+def test_puzzle_tensor_subblock_roundtrip():
+    tensor = np.arange(64, dtype=float).reshape(4, 4, 4)
+    shifted, shifts = td.puzzle_tensor(tensor, max_shift=1, block_size=2, return_shifts=True)
+    assert shifted.shape == tensor.shape
+    restored = td.invert_puzzle_tensor(shifted, shifts)
+    np.testing.assert_allclose(restored, tensor, rtol=1e-5, atol=1e-5)
+
+
+
 def test_puzzle_augmented_methods():
     tensor = np.arange(24, dtype=float).reshape(2, 3, 4)
     algos = ["cp_puzzle", "tucker_puzzle", "hosvd_puzzle", "tensor_train_puzzle"]
