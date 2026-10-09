@@ -135,7 +135,7 @@ def home(request: HttpRequest) -> HttpResponse:
 
             if action == "compare":
                 methods_to_compare = TENSOR_METHODS + PUZZLE_METHODS
-                comparison = compare_methods(tensor, methods_to_compare)
+                comparison = compare_methods(tensor, methods_to_compare, **algo_kwargs)
                 export_path = export_result({"tensor": tensor_data, "comparison": comparison}, output_dir=Path("results"))
                 context = _build_base_context(tensor_data, algorithm, action, ranks_input=ranks_input)
                 context.update(

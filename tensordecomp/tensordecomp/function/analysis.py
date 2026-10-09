@@ -45,7 +45,7 @@ def analyze_decomposition(array: np.ndarray, algorithm: str, result: dict[str, A
     }
 
 
-def compare_methods(array: np.ndarray, algorithms: Iterable[str]) -> list[dict[str, Any]]:
+def compare_methods(array: np.ndarray, algorithms: Iterable[str], **kwargs: Any) -> list[dict[str, Any]]:
     from time import perf_counter
     from .benchmark import estimate_flops, get_complexity_formula
 
@@ -56,7 +56,7 @@ def compare_methods(array: np.ndarray, algorithms: Iterable[str]) -> list[dict[s
         result = None
         for _ in range(3):
             t0 = perf_counter()
-            result = run_algorithm(array, algorithm)
+            result = run_algorithm(array, algorithm, **kwargs)
             durations.append((perf_counter() - t0) * 1000)
 
         execution_time_ms = round(float(sum(durations) / len(durations)), 3)

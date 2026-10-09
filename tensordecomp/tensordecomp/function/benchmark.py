@@ -106,7 +106,7 @@ def get_complexity_formula(shape: tuple[int, ...], algorithm: str) -> str:
     return f"O((∏ N_i)){suffix}"
 
 
-def benchmark_algorithm(array: np.ndarray, algorithm: str, repeats: int = 1) -> dict[str, Any]:
+def benchmark_algorithm(array: np.ndarray, algorithm: str, repeats: int = 1, **kwargs: Any) -> dict[str, Any]:
     if repeats < 1:
         raise ValueError("Benchmark repeats must be at least 1")
 
@@ -115,7 +115,7 @@ def benchmark_algorithm(array: np.ndarray, algorithm: str, repeats: int = 1) -> 
 
     for _ in range(repeats):
         start = perf_counter()
-        last_result = run_algorithm(array, algorithm)
+        last_result = run_algorithm(array, algorithm, **kwargs)
         durations_ms.append((perf_counter() - start) * 1000)
 
     flops = estimate_flops(array.shape, algorithm, last_result)
