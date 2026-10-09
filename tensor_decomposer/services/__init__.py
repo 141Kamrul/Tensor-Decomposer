@@ -1,2 +1,1 @@
-# Backward compatibility re-export from standalone tensordecomp library
-import tensordecomp
+"""Services package for tensor decomposer app."""

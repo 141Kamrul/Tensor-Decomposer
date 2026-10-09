@@ -20,7 +20,7 @@ from tensordecomp import (
     compare_methods,
     reconstruct_tensor,
 )
-from tensor_decomposer.services.function.puzzle_tensor import (
+from tensordecomp.function.puzzle_tensor import (
     invert_puzzle_tensor,
     puzzle_tensor,
     tensor_nuclear_norm_loss,
